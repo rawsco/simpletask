@@ -386,7 +386,8 @@ describe('TaskService', () => {
 
       await taskService.reorderTask(mockUserId, 'task-1', 2);
 
-      expect(dynamoDBClient.update).toHaveBeenCalled();
+      // Should update all tasks in the batch
+      expect(dynamoDBClient.update).toHaveBeenCalledTimes(3);
     });
 
     it('should throw error if task not found', async () => {
@@ -448,6 +449,34 @@ describe('TaskService', () => {
       await taskService.reorderTask(mockUserId, 'task-1', 0);
 
       expect(dynamoDBClient.update).not.toHaveBeenCalled();
+    });
+
+    it('should handle batch updates for large task lists', async () => {
+      // Create 30 tasks to test batch processing (> 25 batch size)
+      const mockTasks: Task[] = Array.from({ length: 30 }, (_, i) => ({
+        userId: mockUserId,
+        taskId: `task-${i + 1}`,
+        description: `Task ${i + 1}`,
+        completed: false,
+        order: i + 1,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      }));
+
+      (dynamoDBClient.queryWithPagination as jest.Mock).mockResolvedValue({
+        items: mockTasks,
+        lastKey: undefined,
+      });
+
+      (dynamoDBClient.update as jest.Mock).mockResolvedValue({
+        ...mockTasks[0],
+        order: 30,
+      });
+
+      await taskService.reorderTask(mockUserId, 'task-1', 29);
+
+      // Should update all 30 tasks
+      expect(dynamoDBClient.update).toHaveBeenCalledTimes(30);
     });
   });
 

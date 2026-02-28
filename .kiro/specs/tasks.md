@@ -284,7 +284,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Test task deletion
     - Test pagination with limit and lastKey
 
-  - [ ] 8.2 Implement task reordering logic
+  - [x] 8.2 Implement task reordering logic
     - Create reorderTask() to update task order
     - Create calculateNewOrder() to compute order values
     - Implement batch update for affected tasks

@@ -286,15 +286,11 @@ export class TaskService {
       return;
     }
 
-    // Calculate new order values
-    const newOrder = this.calculateNewOrder(allTasks, taskId, newPosition);
+    // Calculate new order values for all affected tasks
+    const updatedTasks = this.calculateBatchOrderUpdates(allTasks, taskId, newPosition);
 
-    // Update the task's order
-    await this.updateTask(userId, taskId, { order: newOrder });
-
-    // If needed, update other tasks' order values to maintain proper ordering
-    // This is a simplified approach - in production, you might use fractional indexing
-    // or batch updates for better performance
+    // Persist order changes immediately to database (Requirement 19.2, 19.3)
+    await this.batchUpdateTaskOrders(userId, updatedTasks);
   }
 
   /**
@@ -318,6 +314,63 @@ export class TaskService {
     // Recalculate order values for all tasks
     // Using simple sequential numbering (1, 2, 3, ...)
     return newPosition + 1;
+  }
+
+  /**
+   * Calculate batch order updates for all affected tasks
+   * 
+   * @param tasks - All tasks in current order
+   * @param taskId - The task ID being moved
+   * @param newPosition - The new position (0-indexed)
+   * @returns Array of tasks with updated order values
+   * 
+   * Requirements: 19.1, 19.2
+   */
+  private calculateBatchOrderUpdates(
+    tasks: Task[],
+    taskId: string,
+    newPosition: number
+  ): Array<{ taskId: string; order: number }> {
+    // Remove the task from its current position
+    const taskIndex = tasks.findIndex(t => t.taskId === taskId);
+    const [task] = tasks.splice(taskIndex, 1);
+
+    // Insert at new position
+    tasks.splice(newPosition, 0, task);
+
+    // Recalculate order values for all tasks
+    // Using simple sequential numbering (1, 2, 3, ...)
+    return tasks.map((t, index) => ({
+      taskId: t.taskId,
+      order: index + 1,
+    }));
+  }
+
+  /**
+   * Batch update task orders in the database
+   * 
+   * @param userId - The user's ID
+   * @param updates - Array of task order updates
+   * 
+   * Requirements: 19.2, 19.3
+   */
+  private async batchUpdateTaskOrders(
+    userId: string,
+    updates: Array<{ taskId: string; order: number }>
+  ): Promise<void> {
+    // DynamoDB batchWrite supports up to 25 items per request
+    const BATCH_SIZE = 25;
+    
+    for (let i = 0; i < updates.length; i += BATCH_SIZE) {
+      const batch = updates.slice(i, i + BATCH_SIZE);
+      
+      // Use Promise.all to update tasks in parallel within the batch
+      await Promise.all(
+        batch.map(update =>
+          this.updateTask(userId, update.taskId, { order: update.order })
+        )
+      );
+    }
   }
 
   /**
