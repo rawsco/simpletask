@@ -759,3 +759,332 @@ export class TaskManagerStack extends cdk.Stack {
     // Adjust to minimum required for acceptable performance (Requirement 23.9, 23.10)
   }
 }
+
+// ========================================
+// CloudWatch Dashboards
+// ========================================
+
+// Create comprehensive CloudWatch dashboard for monitoring
+// Task 20.1 - Set up CloudWatch dashboards
+const dashboard = new cloudwatch.Dashboard(this, 'TaskManagerDashboard', {
+  dashboardName: 'TaskManager-Monitoring',
+});
+
+// API Gateway Metrics Section
+dashboard.addWidgets(
+  new cloudwatch.GraphWidget({
+    title: 'API Gateway - Request Count',
+    left: [
+      this.api.metricCount({
+        statistic: 'Sum',
+        period: cdk.Duration.minutes(5),
+      }),
+    ],
+    width: 12,
+  }),
+  new cloudwatch.GraphWidget({
+    title: 'API Gateway - Latency',
+    left: [
+      this.api.metricLatency({
+        statistic: 'Average',
+        period: cdk.Duration.minutes(5),
+      }),
+      this.api.metricLatency({
+        statistic: 'p95',
+        period: cdk.Duration.minutes(5),
+      }),
+      this.api.metricLatency({
+        statistic: 'p99',
+        period: cdk.Duration.minutes(5),
+      }),
+    ],
+    width: 12,
+  })
+);
+
+dashboard.addWidgets(
+  new cloudwatch.GraphWidget({
+    title: 'API Gateway - Error Rate',
+    left: [
+      this.api.metricClientError({
+        statistic: 'Sum',
+        period: cdk.Duration.minutes(5),
+        label: '4XX Errors',
+      }),
+      this.api.metricServerError({
+        statistic: 'Sum',
+        period: cdk.Duration.minutes(5),
+        label: '5XX Errors',
+      }),
+    ],
+    width: 12,
+  }),
+  new cloudwatch.SingleValueWidget({
+    title: 'API Gateway - Total Requests (24h)',
+    metrics: [
+      this.api.metricCount({
+        statistic: 'Sum',
+        period: cdk.Duration.hours(24),
+      }),
+    ],
+    width: 12,
+  })
+);
+
+// Lambda Function Metrics Section
+dashboard.addWidgets(
+  new cloudwatch.GraphWidget({
+    title: 'Lambda - Invocations',
+    left: [
+      authFunction.metricInvocations({
+        statistic: 'Sum',
+        period: cdk.Duration.minutes(5),
+        label: 'Auth Function',
+      }),
+      taskFunction.metricInvocations({
+        statistic: 'Sum',
+        period: cdk.Duration.minutes(5),
+        label: 'Task Function',
+      }),
+    ],
+    width: 12,
+  }),
+  new cloudwatch.GraphWidget({
+    title: 'Lambda - Duration',
+    left: [
+      authFunction.metricDuration({
+        statistic: 'Average',
+        period: cdk.Duration.minutes(5),
+        label: 'Auth Function Avg',
+      }),
+      taskFunction.metricDuration({
+        statistic: 'Average',
+        period: cdk.Duration.minutes(5),
+        label: 'Task Function Avg',
+      }),
+    ],
+    right: [
+      authFunction.metricDuration({
+        statistic: 'p95',
+        period: cdk.Duration.minutes(5),
+        label: 'Auth Function p95',
+      }),
+      taskFunction.metricDuration({
+        statistic: 'p95',
+        period: cdk.Duration.minutes(5),
+        label: 'Task Function p95',
+      }),
+    ],
+    width: 12,
+  })
+);
+
+dashboard.addWidgets(
+  new cloudwatch.GraphWidget({
+    title: 'Lambda - Errors',
+    left: [
+      authFunction.metricErrors({
+        statistic: 'Sum',
+        period: cdk.Duration.minutes(5),
+        label: 'Auth Function',
+      }),
+      taskFunction.metricErrors({
+        statistic: 'Sum',
+        period: cdk.Duration.minutes(5),
+        label: 'Task Function',
+      }),
+    ],
+    width: 12,
+  }),
+  new cloudwatch.GraphWidget({
+    title: 'Lambda - Throttles',
+    left: [
+      authFunction.metricThrottles({
+        statistic: 'Sum',
+        period: cdk.Duration.minutes(5),
+        label: 'Auth Function',
+      }),
+      taskFunction.metricThrottles({
+        statistic: 'Sum',
+        period: cdk.Duration.minutes(5),
+        label: 'Task Function',
+      }),
+    ],
+    width: 12,
+  })
+);
+
+// DynamoDB Metrics Section
+dashboard.addWidgets(
+  new cloudwatch.GraphWidget({
+    title: 'DynamoDB - Read Capacity',
+    left: [
+      this.usersTable.metricConsumedReadCapacityUnits({
+        statistic: 'Sum',
+        period: cdk.Duration.minutes(5),
+        label: 'Users Table',
+      }),
+      this.tasksTable.metricConsumedReadCapacityUnits({
+        statistic: 'Sum',
+        period: cdk.Duration.minutes(5),
+        label: 'Tasks Table',
+      }),
+      this.sessionsTable.metricConsumedReadCapacityUnits({
+        statistic: 'Sum',
+        period: cdk.Duration.minutes(5),
+        label: 'Sessions Table',
+      }),
+    ],
+    width: 12,
+  }),
+  new cloudwatch.GraphWidget({
+    title: 'DynamoDB - Write Capacity',
+    left: [
+      this.usersTable.metricConsumedWriteCapacityUnits({
+        statistic: 'Sum',
+        period: cdk.Duration.minutes(5),
+        label: 'Users Table',
+      }),
+      this.tasksTable.metricConsumedWriteCapacityUnits({
+        statistic: 'Sum',
+        period: cdk.Duration.minutes(5),
+        label: 'Tasks Table',
+      }),
+      this.sessionsTable.metricConsumedWriteCapacityUnits({
+        statistic: 'Sum',
+        period: cdk.Duration.minutes(5),
+        label: 'Sessions Table',
+      }),
+    ],
+    width: 12,
+  })
+);
+
+dashboard.addWidgets(
+  new cloudwatch.GraphWidget({
+    title: 'DynamoDB - Throttled Requests',
+    left: [
+      this.usersTable.metricUserErrors({
+        statistic: 'Sum',
+        period: cdk.Duration.minutes(5),
+        label: 'Users Table',
+      }),
+      this.tasksTable.metricUserErrors({
+        statistic: 'Sum',
+        period: cdk.Duration.minutes(5),
+        label: 'Tasks Table',
+      }),
+      this.sessionsTable.metricUserErrors({
+        statistic: 'Sum',
+        period: cdk.Duration.minutes(5),
+        label: 'Sessions Table',
+      }),
+    ],
+    width: 12,
+  }),
+  new cloudwatch.GraphWidget({
+    title: 'DynamoDB - System Errors',
+    left: [
+      this.usersTable.metricSystemErrorsForOperations({
+        statistic: 'Sum',
+        period: cdk.Duration.minutes(5),
+        label: 'Users Table',
+      }),
+      this.tasksTable.metricSystemErrorsForOperations({
+        statistic: 'Sum',
+        period: cdk.Duration.minutes(5),
+        label: 'Tasks Table',
+      }),
+      this.sessionsTable.metricSystemErrorsForOperations({
+        statistic: 'Sum',
+        period: cdk.Duration.minutes(5),
+        label: 'Sessions Table',
+      }),
+    ],
+    width: 12,
+  })
+);
+
+// Cost Metrics Section
+dashboard.addWidgets(
+  new cloudwatch.SingleValueWidget({
+    title: 'Estimated Monthly Cost',
+    metrics: [
+      new cloudwatch.Metric({
+        namespace: 'AWS/Billing',
+        metricName: 'EstimatedCharges',
+        dimensionsMap: {
+          Currency: 'USD',
+        },
+        statistic: 'Maximum',
+        period: cdk.Duration.hours(6),
+      }),
+    ],
+    width: 8,
+  }),
+  new cloudwatch.SingleValueWidget({
+    title: 'Lambda Invocations (24h)',
+    metrics: [
+      authFunction.metricInvocations({
+        statistic: 'Sum',
+        period: cdk.Duration.hours(24),
+      }),
+      taskFunction.metricInvocations({
+        statistic: 'Sum',
+        period: cdk.Duration.hours(24),
+      }),
+    ],
+    width: 8,
+  }),
+  new cloudwatch.SingleValueWidget({
+    title: 'API Requests (24h)',
+    metrics: [
+      this.api.metricCount({
+        statistic: 'Sum',
+        period: cdk.Duration.hours(24),
+      }),
+    ],
+    width: 8,
+  })
+);
+
+// CloudFront Metrics Section
+dashboard.addWidgets(
+  new cloudwatch.GraphWidget({
+    title: 'CloudFront - Cache Hit Rate',
+    left: [
+      new cloudwatch.Metric({
+        namespace: 'AWS/CloudFront',
+        metricName: 'CacheHitRate',
+        dimensionsMap: {
+          DistributionId: distribution.distributionId,
+        },
+        statistic: 'Average',
+        period: cdk.Duration.minutes(5),
+      }),
+    ],
+    width: 12,
+  }),
+  new cloudwatch.GraphWidget({
+    title: 'CloudFront - Requests',
+    left: [
+      new cloudwatch.Metric({
+        namespace: 'AWS/CloudFront',
+        metricName: 'Requests',
+        dimensionsMap: {
+          DistributionId: distribution.distributionId,
+        },
+        statistic: 'Sum',
+        period: cdk.Duration.minutes(5),
+      }),
+    ],
+    width: 12,
+  })
+);
+
+// Output dashboard URL
+new cdk.CfnOutput(this, 'DashboardURL', {
+  value: `https://console.aws.amazon.com/cloudwatch/home?region=${this.region}#dashboards:name=${dashboard.dashboardName}`,
+  description: 'CloudWatch Dashboard URL',
+});
+
