@@ -670,7 +670,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Create dashboard for DynamoDB metrics (read/write capacity, throttles)
     - Create dashboard for cost metrics
 
-  - [ ] 20.2 Configure cost budget and alerts
+  - [x] 20.2 Configure cost budget and alerts
     - Create AWS Budget with $10 monthly threshold
     - Configure alert at 80% threshold
     - Configure critical alert at 100% threshold
