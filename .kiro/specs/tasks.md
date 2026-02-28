@@ -319,7 +319,7 @@ The plan includes property-based tests for universal correctness properties and 
 - [x] 9. Checkpoint - Ensure task service tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [-] 10. Lambda function handlers - Authentication
+- [x] 10. Lambda function handlers - Authentication
   - [x] 10.1 Implement AuthHandler.handleRegister
     - Parse and validate request body (email, password, captchaToken)
     - Call AuthenticationService.validateCaptcha()
