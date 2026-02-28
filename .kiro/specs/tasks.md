@@ -493,8 +493,8 @@ The plan includes property-based tests for universal correctness properties and 
     - Implement protected route component for authenticated pages
     - Store session token in localStorage with expiry
 
-- [~] 15. Frontend - Authentication UI components
-  - [ ] 15.1 Create RegistrationForm component
+- [-] 15. Frontend - Authentication UI components
+  - [x] 15.1 Create RegistrationForm component
     - Build form with email, password, and CAPTCHA fields
     - Implement client-side validation for email format and password complexity
     - Call API client register method on submit
