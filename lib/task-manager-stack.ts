@@ -631,5 +631,131 @@ export class TaskManagerStack extends cdk.Stack {
     // 2. Add certificate ARN and domain names to distribution configuration
     // 3. Create Route53 alias record pointing to CloudFront distribution
     // 4. Certificate auto-renewal is handled by ACM (Requirement 5.4)
+
+    // ========================================
+    // Lambda Functions with Optimized Configuration
+    // ========================================
+
+    // Create IAM role for Lambda execution with least privilege
+    // Requirement 13.1, 13.11
+    const lambdaExecutionRole = new iam.Role(this, 'LambdaExecutionRole', {
+      roleName: 'TaskManager-LambdaExecutionRole',
+      assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
+      description: 'Execution role for TaskManager Lambda functions with least privilege',
+      managedPolicies: [
+        iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
+      ],
+    });
+
+    // Grant DynamoDB access only to required tables (Requirement 13.1, 13.11)
+    this.usersTable.grantReadWriteData(lambdaExecutionRole);
+    this.tasksTable.grantReadWriteData(lambdaExecutionRole);
+    this.sessionsTable.grantReadWriteData(lambdaExecutionRole);
+    this.auditLogTable.grantReadWriteData(lambdaExecutionRole);
+    this.rateLimitsTable.grantReadWriteData(lambdaExecutionRole);
+
+    // Grant Secrets Manager access only to required secrets (Requirement 13.1, 13.11)
+    dbEncryptionSecret.grantRead(lambdaExecutionRole);
+    jwtSigningSecret.grantRead(lambdaExecutionRole);
+
+    // Grant SES send email permission (Requirement 13.1, 13.11)
+    lambdaExecutionRole.addToPolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ['ses:SendEmail', 'ses:SendRawEmail'],
+      resources: ['*'], // SES doesn't support resource-level permissions for SendEmail
+    }));
+
+    // Grant CloudWatch Logs write permission (already included in AWSLambdaBasicExecutionRole)
+
+    // Common Lambda environment variables
+    const lambdaEnvironment = {
+      USERS_TABLE_NAME: this.usersTable.tableName,
+      TASKS_TABLE_NAME: this.tasksTable.tableName,
+      SESSIONS_TABLE_NAME: this.sessionsTable.tableName,
+      AUDIT_LOG_TABLE_NAME: this.auditLogTable.tableName,
+      RATE_LIMITS_TABLE_NAME: this.rateLimitsTable.tableName,
+      DB_ENCRYPTION_SECRET_ARN: dbEncryptionSecret.secretArn,
+      JWT_SIGNING_SECRET_ARN: jwtSigningSecret.secretArn,
+      NODE_ENV: 'production',
+    };
+
+    // Authentication Lambda Function
+    // Optimized configuration: 512MB memory, 30s timeout
+    // Requirements: 23.9, 23.10
+    const authFunction = new lambda.Function(this, 'AuthFunction', {
+      functionName: 'TaskManager-AuthHandler',
+      runtime: lambda.Runtime.NODEJS_18_X,
+      handler: 'auth-handler.handleRegister', // Default handler, will be overridden by API Gateway integration
+      code: lambda.Code.fromAsset('lambda'),
+      role: lambdaExecutionRole,
+      environment: lambdaEnvironment,
+      memorySize: 512, // Start with 512MB, can be optimized based on CloudWatch metrics
+      timeout: cdk.Duration.seconds(30), // 30 second timeout for auth operations
+      logRetention: logs.RetentionDays.ONE_MONTH,
+      description: 'Handles authentication operations (register, login, verify, password reset)',
+    });
+
+    // Task Management Lambda Function
+    // Optimized configuration: 512MB memory, 30s timeout
+    // Requirements: 23.9, 23.10
+    const taskFunction = new lambda.Function(this, 'TaskFunction', {
+      functionName: 'TaskManager-TaskHandler',
+      runtime: lambda.Runtime.NODEJS_18_X,
+      handler: 'task-handler.handleList', // Default handler, will be overridden by API Gateway integration
+      code: lambda.Code.fromAsset('lambda'),
+      role: lambdaExecutionRole,
+      environment: lambdaEnvironment,
+      memorySize: 512, // Start with 512MB, can be optimized based on CloudWatch metrics
+      timeout: cdk.Duration.seconds(30), // 30 second timeout for task operations
+      logRetention: logs.RetentionDays.ONE_MONTH,
+      description: 'Handles task management operations (create, update, delete, reorder, list)',
+    });
+
+    // Create Lambda alarms for monitoring
+    const authFunctionErrorAlarm = new cloudwatch.Alarm(this, 'AuthFunctionErrorAlarm', {
+      alarmName: 'TaskManager-AuthFunction-Errors',
+      alarmDescription: 'Alert when auth function error rate is high',
+      metric: authFunction.metricErrors({
+        period: cdk.Duration.minutes(5),
+        statistic: 'Sum',
+      }),
+      threshold: 10,
+      evaluationPeriods: 1,
+      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
+      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+    });
+    authFunctionErrorAlarm.addAlarmAction(new cloudwatch_actions.SnsAction(alarmTopic));
+
+    const taskFunctionErrorAlarm = new cloudwatch.Alarm(this, 'TaskFunctionErrorAlarm', {
+      alarmName: 'TaskManager-TaskFunction-Errors',
+      alarmDescription: 'Alert when task function error rate is high',
+      metric: taskFunction.metricErrors({
+        period: cdk.Duration.minutes(5),
+        statistic: 'Sum',
+      }),
+      threshold: 10,
+      evaluationPeriods: 1,
+      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
+      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+    });
+    taskFunctionErrorAlarm.addAlarmAction(new cloudwatch_actions.SnsAction(alarmTopic));
+
+    // Output Lambda function ARNs
+    new cdk.CfnOutput(this, 'AuthFunctionArn', {
+      value: authFunction.functionArn,
+      description: 'ARN of the authentication Lambda function',
+    });
+
+    new cdk.CfnOutput(this, 'TaskFunctionArn', {
+      value: taskFunction.functionArn,
+      description: 'ARN of the task management Lambda function',
+    });
+
+    // Note: Lambda function memory and timeout should be optimized based on CloudWatch metrics
+    // Test with different memory allocations (256MB, 512MB, 1024MB) and monitor:
+    // - Duration metrics
+    // - Memory utilization
+    // - Cost per invocation
+    // Adjust to minimum required for acceptable performance (Requirement 23.9, 23.10)
   }
 }
