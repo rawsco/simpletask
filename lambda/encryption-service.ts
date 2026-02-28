@@ -167,7 +167,7 @@ export class EncryptionService {
         throw new Error('Secret value is empty');
       }
 
-      // Parse secret (expecting JSON with 'key' field)
+      // Parse secret (expecting JSON with 'key' or 'encryptionKey' field)
       let secretData: any;
       try {
         secretData = JSON.parse(response.SecretString);
@@ -176,18 +176,19 @@ export class EncryptionService {
         secretData = { key: response.SecretString };
       }
 
-      if (!secretData.key) {
+      const keyValue = secretData.key || secretData.encryptionKey;
+      if (!keyValue) {
         throw new Error('Secret does not contain encryption key');
       }
 
       // Convert key to Buffer (expecting hex or base64 encoded key)
       let keyBuffer: Buffer;
-      if (secretData.key.length === this.keyLength * 2) {
+      if (keyValue.length === this.keyLength * 2) {
         // Hex encoded (64 characters for 256 bits)
-        keyBuffer = Buffer.from(secretData.key, 'hex');
+        keyBuffer = Buffer.from(keyValue, 'hex');
       } else {
         // Base64 encoded
-        keyBuffer = Buffer.from(secretData.key, 'base64');
+        keyBuffer = Buffer.from(keyValue, 'base64');
       }
 
       if (keyBuffer.length !== this.keyLength) {
@@ -228,7 +229,7 @@ export class EncryptionService {
  * Configuration should be provided via environment variables
  */
 export const encryptionService = new EncryptionService({
-  secretName: process.env.ENCRYPTION_KEY_SECRET_NAME || 'task-manager/encryption-key',
+  secretName: process.env.DB_ENCRYPTION_SECRET_ARN || process.env.ENCRYPTION_KEY_SECRET_NAME || 'TaskManager/DBEncryptionKey',
   region: process.env.AWS_REGION,
   cacheTTLMs: parseInt(process.env.ENCRYPTION_KEY_CACHE_TTL_MS || '300000', 10),
 });
