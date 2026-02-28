@@ -1060,17 +1060,32 @@ export class TaskManagerStack extends cdk.Stack {
       new cloudwatch.GraphWidget({
         title: 'DynamoDB - System Errors',
         left: [
-          this.usersTable.metricSystemErrorsForOperations({
+          new cloudwatch.Metric({
+            namespace: 'AWS/DynamoDB',
+            metricName: 'SystemErrors',
+            dimensionsMap: {
+              TableName: this.usersTable.tableName,
+            },
             statistic: 'Sum',
             period: cdk.Duration.minutes(5),
             label: 'Users Table',
           }),
-          this.tasksTable.metricSystemErrorsForOperations({
+          new cloudwatch.Metric({
+            namespace: 'AWS/DynamoDB',
+            metricName: 'SystemErrors',
+            dimensionsMap: {
+              TableName: this.tasksTable.tableName,
+            },
             statistic: 'Sum',
             period: cdk.Duration.minutes(5),
             label: 'Tasks Table',
           }),
-          this.sessionsTable.metricSystemErrorsForOperations({
+          new cloudwatch.Metric({
+            namespace: 'AWS/DynamoDB',
+            metricName: 'SystemErrors',
+            dimensionsMap: {
+              TableName: this.sessionsTable.tableName,
+            },
             statistic: 'Sum',
             period: cdk.Duration.minutes(5),
             label: 'Sessions Table',
@@ -1232,9 +1247,113 @@ export class TaskManagerStack extends cdk.Stack {
       description: 'ARN of the log cleanup Lambda function',
     });
 
-    new cdk.CfnOutput(this, 'LogCleanupSchedule', {
+    new cdk.CfnOutput(this, 'LogCleanupScheduleInfo', {
       value: 'Daily at 2:00 AM UTC',
       description: 'Schedule for automated log cleanup',
+    });
+
+    // ========================================
+    // DynamoDB Automated Backups
+    // ========================================
+
+    // Create IAM role for backup Lambda function
+    // Requirement 13.10 - Implement backup and disaster recovery procedures
+    const backupRole = new iam.Role(this, 'BackupRole', {
+      roleName: 'TaskManager-BackupRole',
+      assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
+      description: 'Execution role for DynamoDB backup Lambda function',
+      managedPolicies: [
+        iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
+      ],
+    });
+
+    // Grant permissions to create and manage backups
+    backupRole.addToPolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: [
+        'dynamodb:CreateBackup',
+        'dynamodb:DescribeBackup',
+        'dynamodb:ListBackups',
+        'dynamodb:DeleteBackup',
+      ],
+      resources: [
+        this.usersTable.tableArn,
+        this.tasksTable.tableArn,
+        this.sessionsTable.tableArn,
+        this.auditLogTable.tableArn,
+        `${this.usersTable.tableArn}/backup/*`,
+        `${this.tasksTable.tableArn}/backup/*`,
+        `${this.sessionsTable.tableArn}/backup/*`,
+        `${this.auditLogTable.tableArn}/backup/*`,
+      ],
+    }));
+
+    // Create Lambda function for DynamoDB backups
+    const backupFunction = new lambda.Function(this, 'BackupFunction', {
+      functionName: 'TaskManager-DynamoDBBackup',
+      runtime: lambda.Runtime.NODEJS_18_X,
+      handler: 'backup-handler.handler',
+      code: lambda.Code.fromAsset('lambda'),
+      role: backupRole,
+      environment: {
+        USERS_TABLE_NAME: this.usersTable.tableName,
+        TASKS_TABLE_NAME: this.tasksTable.tableName,
+        SESSIONS_TABLE_NAME: this.sessionsTable.tableName,
+        AUDIT_LOG_TABLE_NAME: this.auditLogTable.tableName,
+      },
+      memorySize: 256, // Minimal memory for backup operations
+      timeout: cdk.Duration.minutes(10), // 10 minutes for backup and cleanup
+      logRetention: logs.RetentionDays.ONE_MONTH,
+      description: 'Creates daily on-demand backups for DynamoDB tables and manages 30-day retention',
+    });
+
+    // Create EventBridge rule to run daily at 3 AM UTC
+    // Requirement 13.10 - Automated daily backups
+    const backupRule = new events.Rule(this, 'BackupSchedule', {
+      ruleName: 'TaskManager-DailyBackup',
+      description: 'Triggers DynamoDB backup Lambda function daily at 3 AM UTC',
+      schedule: events.Schedule.cron({
+        minute: '0',
+        hour: '3',
+        day: '*',
+        month: '*',
+        year: '*',
+      }),
+    });
+
+    // Add Lambda function as target for the rule
+    backupRule.addTarget(new targets.LambdaFunction(backupFunction));
+
+    // Create CloudWatch alarm for backup failures
+    const backupFailureAlarm = new cloudwatch.Alarm(this, 'BackupFailureAlarm', {
+      alarmName: 'TaskManager-BackupFailures',
+      alarmDescription: 'Alert when DynamoDB backup function fails',
+      metric: backupFunction.metricErrors({
+        period: cdk.Duration.hours(24),
+        statistic: 'Sum',
+      }),
+      threshold: 1, // Alert on any failure
+      evaluationPeriods: 1,
+      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+    });
+
+    backupFailureAlarm.addAlarmAction(new cloudwatch_actions.SnsAction(alarmTopic));
+
+    // Output backup function details
+    new cdk.CfnOutput(this, 'BackupFunctionArn', {
+      value: backupFunction.functionArn,
+      description: 'ARN of the DynamoDB backup Lambda function',
+    });
+
+    new cdk.CfnOutput(this, 'BackupScheduleInfo', {
+      value: 'Daily at 3:00 AM UTC',
+      description: 'Schedule for automated DynamoDB backups',
+    });
+
+    new cdk.CfnOutput(this, 'BackupRetention', {
+      value: '30 days',
+      description: 'Backup retention period',
     });
 
     // ========================================
