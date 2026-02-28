@@ -763,7 +763,7 @@ export class TaskManagerStack extends cdk.Stack {
     const authFunction = new lambda.Function(this, 'AuthFunction', {
       functionName: 'TaskManager-AuthHandler',
       runtime: lambda.Runtime.NODEJS_18_X,
-      handler: 'auth-handler.handleRegister', // Default handler, will be overridden by API Gateway integration
+      handler: 'auth-handler-main.handler',
       code: lambda.Code.fromAsset('lambda'),
       role: lambdaExecutionRole,
       environment: lambdaEnvironment,
@@ -779,7 +779,7 @@ export class TaskManagerStack extends cdk.Stack {
     const taskFunction = new lambda.Function(this, 'TaskFunction', {
       functionName: 'TaskManager-TaskHandler',
       runtime: lambda.Runtime.NODEJS_18_X,
-      handler: 'task-handler.handleList', // Default handler, will be overridden by API Gateway integration
+      handler: 'task-handler-main.handler',
       code: lambda.Code.fromAsset('lambda'),
       role: lambdaExecutionRole,
       environment: lambdaEnvironment,
@@ -828,6 +828,47 @@ export class TaskManagerStack extends cdk.Stack {
       value: taskFunction.functionArn,
       description: 'ARN of the task management Lambda function',
     });
+
+    // ========================================
+    // API Gateway Lambda Integrations
+    // ========================================
+
+    // Create Lambda integrations
+    const authIntegration = new apigateway.LambdaIntegration(authFunction);
+    const taskIntegration = new apigateway.LambdaIntegration(taskFunction);
+
+    // Auth endpoints
+    const registerResource = authResource.addResource('register');
+    registerResource.addMethod('POST', authIntegration);
+
+    const loginResource = authResource.addResource('login');
+    loginResource.addMethod('POST', authIntegration);
+
+    const logoutResource = authResource.addResource('logout');
+    logoutResource.addMethod('POST', authIntegration);
+
+    const verifyResource = authResource.addResource('verify');
+    verifyResource.addMethod('POST', authIntegration);
+
+    const resendResource = authResource.addResource('resend-verification');
+    resendResource.addMethod('POST', authIntegration);
+
+    const resetRequestResource = authResource.addResource('reset-password-request');
+    resetRequestResource.addMethod('POST', authIntegration);
+
+    const resetResource = authResource.addResource('reset-password');
+    resetResource.addMethod('POST', authIntegration);
+
+    // Task endpoints
+    tasksResource.addMethod('GET', taskIntegration); // List tasks
+    tasksResource.addMethod('POST', taskIntegration); // Create task
+
+    const taskIdResource = tasksResource.addResource('{taskId}');
+    taskIdResource.addMethod('PUT', taskIntegration); // Update task
+    taskIdResource.addMethod('DELETE', taskIntegration); // Delete task
+
+    const reorderResource = tasksResource.addResource('reorder');
+    reorderResource.addMethod('POST', taskIntegration); // Reorder tasks
 
     // Note: Lambda function memory and timeout should be optimized based on CloudWatch metrics
     // Test with different memory allocations (256MB, 512MB, 1024MB) and monitor:
