@@ -107,6 +107,9 @@ export default {
           '100%': { transform: 'scale(4)', opacity: '0' },
         },
       },
+      spacing: {
+        'safe': 'env(safe-area-inset-bottom)',
+      },
     },
   },
   plugins: [
