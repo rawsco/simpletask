@@ -328,7 +328,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Return appropriate HTTP response with error handling
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8_
 
-  - [ ] 10.2 Implement AuthHandler.handleVerify
+  - [x] 10.2 Implement AuthHandler.handleVerify
     - Parse and validate request body (email, code)
     - Call AuthenticationService.verifyCode()
     - Create session on successful verification
