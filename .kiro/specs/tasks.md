@@ -632,7 +632,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Enable Lambda function compression
     - _Requirements: 23.9, 23.10_
 
-  - [ ] 19.4 Configure IAM roles with least privilege
+  - [x] 19.4 Configure IAM roles with least privilege
     - Create Lambda execution role with minimal permissions
     - Grant DynamoDB access only to required tables
     - Grant Secrets Manager access only to required secrets
