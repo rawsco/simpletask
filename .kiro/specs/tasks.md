@@ -9,13 +9,13 @@ The plan includes property-based tests for universal correctness properties and 
 ## Tasks
 
 - [-] 1. Project setup and infrastructure foundation
-  - [-] 1.1 Initialize TypeScript project with AWS CDK
+  - [x] 1.1 Initialize TypeScript project with AWS CDK
     - Create package.json with dependencies (aws-cdk-lib, typescript, jest, fast-check)
     - Configure tsconfig.json for Node.js Lambda runtime
     - Set up project structure: /lib (CDK), /lambda (handlers), /frontend (React)
     - _Requirements: 23.1_
 
-  - [ ] 1.2 Define DynamoDB table schemas in CDK
+  - [-] 1.2 Define DynamoDB table schemas in CDK
     - Create Users table with email partition key and UserIdIndex GSI
     - Create Tasks table with userId partition key, taskId sort key, and OrderIndex LSI
     - Create Sessions table with sessionToken partition key, UserSessionsIndex GSI, and TTL
