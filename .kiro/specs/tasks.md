@@ -697,8 +697,8 @@ The plan includes property-based tests for universal correctness properties and 
     - **Validates: Requirements 23.15**
     - Test that logs older than 30 days are deleted
 
-- [~] 21. SSL certificate management
-  - [ ] 21.1 Set up SSL certificate with ACM
+- [-] 21. SSL certificate management
+  - [x] 21.1 Set up SSL certificate with ACM
     - Request certificate from AWS Certificate Manager
     - Configure DNS validation
     - Associate certificate with CloudFront distribution

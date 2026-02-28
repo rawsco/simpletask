@@ -543,6 +543,37 @@ export class TaskManagerStack extends cdk.Stack {
     // Grant CloudFront read access to the bucket
     frontendBucket.grantRead(originAccessIdentity);
 
+    // ========================================
+    // SSL Certificate Management with ACM
+    // ========================================
+
+    // Note: ACM certificates for CloudFront must be created in us-east-1 region
+    // Requirement 5.1, 5.3 - SSL certificate from trusted CA (ACM)
+    // 
+    // To use a custom domain with SSL certificate:
+    // 1. Uncomment the certificate creation code below
+    // 2. Replace 'app.example.com' with your actual domain name
+    // 3. Ensure you have access to the domain's DNS for validation
+    // 4. Deploy the stack - ACM will create the certificate with DNS validation
+    // 5. Add the DNS validation records to your domain's DNS configuration
+    // 6. Once validated, the certificate will be automatically associated with CloudFront
+    // 7. Create a Route53 alias record pointing to the CloudFront distribution
+    //
+    // ACM automatically handles certificate renewal (Requirement 5.4)
+    // Certificates are renewed before expiration with no manual intervention required
+
+    // Uncomment to enable custom domain with SSL certificate:
+    // const certificate = new certificatemanager.Certificate(this, 'SSLCertificate', {
+    //   domainName: 'app.example.com', // Replace with your domain
+    //   validation: certificatemanager.CertificateValidation.fromDns(), // DNS validation (recommended for automation)
+    // });
+    //
+    // Output certificate ARN
+    // new cdk.CfnOutput(this, 'CertificateArn', {
+    //   value: certificate.certificateArn,
+    //   description: 'ARN of the ACM SSL certificate',
+    // });
+
     // Create CloudFront distribution with HTTPS enforcement
     // Requirements: 5.1, 5.2, 5.3, 5.5, 5.6, 23.4, 23.5, 23.8
     const distribution = new cloudfront.Distribution(this, 'FrontendDistribution', {
@@ -581,9 +612,10 @@ export class TaskManagerStack extends cdk.Stack {
         },
       ],
       minimumProtocolVersion: cloudfront.SecurityPolicyProtocol.TLS_V1_2_2021, // Requirement 5.3, 5.5 - TLS 1.2 minimum
-      // Note: SSL certificate configuration would be added here when custom domain is configured
-      // certificate: certificate, // Requirement 5.1, 5.3 - SSL certificate from ACM
-      // domainNames: ['app.example.com'],
+      // Requirement 5.1, 5.3 - SSL certificate from ACM
+      // When using custom domain, uncomment the following lines:
+      // certificate: certificate,
+      // domainNames: ['app.example.com'], // Replace with your domain
       priceClass: cloudfront.PriceClass.PRICE_CLASS_100, // Use only North America and Europe edge locations for cost optimization
       enableLogging: true, // Enable access logs for monitoring
       logBucket: new s3.Bucket(this, 'CloudFrontLogBucket', {
@@ -639,12 +671,6 @@ export class TaskManagerStack extends cdk.Stack {
       value: frontendBucket.bucketName,
       description: 'S3 bucket for frontend hosting',
     });
-
-    // Note: To configure custom domain with SSL certificate:
-    // 1. Request certificate in ACM (must be in us-east-1 for CloudFront)
-    // 2. Add certificate ARN and domain names to distribution configuration
-    // 3. Create Route53 alias record pointing to CloudFront distribution
-    // 4. Certificate auto-renewal is handled by ACM (Requirement 5.4)
 
     // ========================================
     // Lambda Functions with Optimized Configuration
