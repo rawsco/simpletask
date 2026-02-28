@@ -547,7 +547,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Show empty state message when no tasks
     - _Requirements: 16.1, 16.2, 16.3, 16.4, 20.1, 20.2, 20.3, 20.4, 20.5_
 
-  - [ ] 16.2 Create TaskItem component
+  - [x] 16.2 Create TaskItem component
     - Display task description and checkbox
     - Implement checkbox click handler to toggle completion status
     - Call API client update method on toggle
