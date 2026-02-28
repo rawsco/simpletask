@@ -15,7 +15,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Set up project structure: /lib (CDK), /lambda (handlers), /frontend (React)
     - _Requirements: 23.1_
 
-  - [-] 1.2 Define DynamoDB table schemas in CDK
+  - [x] 1.2 Define DynamoDB table schemas in CDK
     - Create Users table with email partition key and UserIdIndex GSI
     - Create Tasks table with userId partition key, taskId sort key, and OrderIndex LSI
     - Create Sessions table with sessionToken partition key, UserSessionsIndex GSI, and TTL
@@ -25,7 +25,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Configure on-demand billing mode
     - _Requirements: 11.7, 13.7, 23.3_
 
-  - [ ] 1.3 Set up AWS Secrets Manager for credentials
+  - [-] 1.3 Set up AWS Secrets Manager for credentials
     - Create secret for database encryption keys
     - Create secret for JWT signing key
     - Configure automatic 90-day rotation

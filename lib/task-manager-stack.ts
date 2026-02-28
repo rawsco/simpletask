@@ -172,5 +172,56 @@ export class TaskManagerStack extends cdk.Stack {
       timeToLiveAttribute: 'expiresAt', // Automatic cleanup of old rate limit records
       removalPolicy: cdk.RemovalPolicy.DESTROY, // Rate limit data is ephemeral
     });
+
+    // ========================================
+    // AWS Secrets Manager
+    // ========================================
+
+    // Secret for database encryption keys
+    // Requirement 13.4, 13.5
+    const dbEncryptionSecret = new secretsmanager.Secret(this, 'DBEncryptionSecret', {
+      secretName: 'TaskManager/DBEncryptionKey',
+      description: 'Encryption key for sensitive database fields (passwords, tokens, codes)',
+      generateSecretString: {
+        secretStringTemplate: JSON.stringify({ keyVersion: '1' }),
+        generateStringKey: 'encryptionKey',
+        excludePunctuation: true,
+        passwordLength: 32,
+      },
+    });
+
+    // Enable automatic rotation every 90 days
+    dbEncryptionSecret.addRotationSchedule('DBEncryptionKeyRotation', {
+      automaticallyAfter: cdk.Duration.days(90),
+    });
+
+    // Secret for JWT signing key
+    // Requirement 13.4, 13.5
+    const jwtSigningSecret = new secretsmanager.Secret(this, 'JWTSigningSecret', {
+      secretName: 'TaskManager/JWTSigningKey',
+      description: 'JWT signing key for session token generation',
+      generateSecretString: {
+        secretStringTemplate: JSON.stringify({ keyVersion: '1' }),
+        generateStringKey: 'signingKey',
+        excludePunctuation: true,
+        passwordLength: 64,
+      },
+    });
+
+    // Enable automatic rotation every 90 days
+    jwtSigningSecret.addRotationSchedule('JWTSigningKeyRotation', {
+      automaticallyAfter: cdk.Duration.days(90),
+    });
+
+    // Export secret ARNs for Lambda function access
+    new cdk.CfnOutput(this, 'DBEncryptionSecretArn', {
+      value: dbEncryptionSecret.secretArn,
+      description: 'ARN of the database encryption key secret',
+    });
+
+    new cdk.CfnOutput(this, 'JWTSigningSecretArn', {
+      value: jwtSigningSecret.secretArn,
+      description: 'ARN of the JWT signing key secret',
+    });
   }
 }
