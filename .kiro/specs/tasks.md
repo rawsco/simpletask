@@ -383,8 +383,8 @@ The plan includes property-based tests for universal correctness properties and 
     - Test account lockout scenario
 
 
-- [~] 11. Lambda function handlers - Task management
-  - [ ] 11.1 Implement TaskHandler.handleList
+- [-] 11. Lambda function handlers - Task management
+  - [x] 11.1 Implement TaskHandler.handleList
     - Extract and validate session token
     - Call AuthenticationService.validateSession()
     - Parse query parameters (limit, lastKey, showCompleted)
