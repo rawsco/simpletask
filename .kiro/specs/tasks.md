@@ -510,7 +510,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Provide "Resend code" button
     - _Requirements: 2.2, 2.3, 2.7_
 
-  - [ ] 15.3 Create LoginForm component
+  - [x] 15.3 Create LoginForm component
     - Build form with email and password fields
     - Call API client login method on submit
     - Store session token on successful login
