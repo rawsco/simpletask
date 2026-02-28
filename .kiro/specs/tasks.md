@@ -345,7 +345,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Return session token or error
     - _Requirements: 4.1, 4.2, 9.1, 9.4, 10.1_
 
-  - [ ] 10.4 Implement AuthHandler.handleLogout
+  - [x] 10.4 Implement AuthHandler.handleLogout
     - Parse session token from request
     - Call AuthenticationService.terminateSession()
     - Call AuditLogService.logSessionEvent()
