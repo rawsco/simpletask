@@ -418,7 +418,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Return success response
     - _Requirements: 17.1, 17.3_
 
-  - [ ] 11.5 Implement TaskHandler.handleReorder
+  - [x] 11.5 Implement TaskHandler.handleReorder
     - Extract and validate session token
     - Call AuthenticationService.validateSession()
     - Parse request body (taskId, newPosition)
