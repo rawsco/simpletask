@@ -435,7 +435,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Test task reordering
     - Test unauthorized access attempts
 
-- [-] 12. Security middleware and headers
+- [x] 12. Security middleware and headers
   - [x] 12.1 Implement rate limiting middleware
     - Create middleware to check rate limits before handler execution
     - Call RateLimitService.checkIPRateLimit()
