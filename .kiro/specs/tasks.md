@@ -409,7 +409,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Return updated task
     - _Requirements: 15.1, 15.2_
 
-  - [ ] 11.4 Implement TaskHandler.handleDelete
+  - [x] 11.4 Implement TaskHandler.handleDelete
     - Extract and validate session token
     - Call AuthenticationService.validateSession()
     - Parse task ID from path
