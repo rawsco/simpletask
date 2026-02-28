@@ -663,7 +663,7 @@ The plan includes property-based tests for universal correctness properties and 
     - **Validates: Requirements 23.6, 23.7**
     - Test that queries use indexes and batch operations where possible
 
-- [-] 20. Monitoring and cost management
+- [x] 20. Monitoring and cost management
   - [x] 20.1 Set up CloudWatch dashboards
     - Create dashboard for API metrics (latency, error rate, request count)
     - Create dashboard for Lambda metrics (invocations, duration, errors)
