@@ -224,8 +224,8 @@ The plan includes property-based tests for universal correctness properties and 
     - Test Retry-After header calculation
     - Test different limits for auth vs non-auth endpoints
 
-- [ ] 7. Audit logging service implementation
-  - [ ] 7.1 Implement AuditLogService
+- [-] 7. Audit logging service implementation
+  - [x] 7.1 Implement AuditLogService
     - Create logLoginAttempt() to record login events
     - Create logPasswordChange() to record password changes
     - Create logPasswordResetRequest() to record reset requests
@@ -251,7 +251,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Test audit log entry structure
     - Test TTL configuration
 
-- [ ] 8. Task service implementation
+- [~] 8. Task service implementation
   - [ ] 8.1 Implement TaskService CRUD operations
     - Create createTask() to insert task into DynamoDB Tasks table
     - Create getTask() to retrieve single task by userId and taskId
@@ -316,10 +316,10 @@ The plan includes property-based tests for universal correctness properties and 
     - **Validates: Requirements 18.3, 18.4, 18.5**
     - Test that users cannot access, modify, or delete other users' tasks
 
-- [ ] 9. Checkpoint - Ensure task service tests pass
+- [~] 9. Checkpoint - Ensure task service tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 10. Lambda function handlers - Authentication
+- [~] 10. Lambda function handlers - Authentication
   - [ ] 10.1 Implement AuthHandler.handleRegister
     - Parse and validate request body (email, password, captchaToken)
     - Call AuthenticationService.validateCaptcha()
@@ -383,7 +383,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Test account lockout scenario
 
 
-- [ ] 11. Lambda function handlers - Task management
+- [~] 11. Lambda function handlers - Task management
   - [ ] 11.1 Implement TaskHandler.handleList
     - Extract and validate session token
     - Call AuthenticationService.validateSession()
