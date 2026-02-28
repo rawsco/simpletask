@@ -444,7 +444,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Call AuditLogService.logRateLimitEvent()
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.6_
 
-  - [ ] 12.2 Implement security headers middleware
+  - [x] 12.2 Implement security headers middleware
     - Add Content-Security-Policy header
     - Add X-Frame-Options: DENY header
     - Add X-Content-Type-Options: nosniff header
