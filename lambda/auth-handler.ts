@@ -18,6 +18,7 @@
 
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { authenticationService } from './authentication-service';
+import type { User } from './types';
 import { auditLogService } from './audit-log-service';
 
 /**
@@ -181,7 +182,6 @@ export async function handleVerify(event: APIGatewayProxyEvent): Promise<APIGate
 
     // Get user from database to get userId
     const { dynamoDBClient, TableNames } = await import('./dynamodb-client');
-    const { User } = await import('./types');
     const user = await dynamoDBClient.get<User>({
       TableName: TableNames.USERS,
       Key: { email },
@@ -460,7 +460,6 @@ export async function handlePasswordReset(event: APIGatewayProxyEvent): Promise<
 
     // Get user from database to get userId for logging
     const { dynamoDBClient, TableNames } = await import('./dynamodb-client');
-    const { User } = await import('./types');
     const user = await dynamoDBClient.get<User>({
       TableName: TableNames.USERS,
       Key: { email },

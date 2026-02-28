@@ -622,6 +622,7 @@ export class TaskManagerStack extends cdk.Stack {
         bucketName: `taskmanager-cloudfront-logs-${this.account}-${this.region}`,
         encryption: s3.BucketEncryption.S3_MANAGED,
         blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+        objectOwnership: s3.ObjectOwnership.OBJECT_WRITER, // Required for CloudFront logging
         removalPolicy: cdk.RemovalPolicy.DESTROY,
         autoDeleteObjects: true,
         lifecycleRules: [
