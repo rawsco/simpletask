@@ -392,7 +392,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Return paginated task list
     - _Requirements: 16.1, 16.2, 20.1, 20.2_
 
-  - [ ] 11.2 Implement TaskHandler.handleCreate
+  - [x] 11.2 Implement TaskHandler.handleCreate
     - Extract and validate session token
     - Call AuthenticationService.validateSession()
     - Parse and validate request body (description)
