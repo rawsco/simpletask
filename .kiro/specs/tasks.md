@@ -473,8 +473,8 @@ The plan includes property-based tests for universal correctness properties and 
 - [x] 13. Checkpoint - Ensure backend implementation complete
   - Ensure all tests pass, ask the user if questions arise.
 
-- [~] 14. Frontend - React application setup
-  - [ ] 14.1 Initialize React application with TypeScript
+- [-] 14. Frontend - React application setup
+  - [x] 14.1 Initialize React application with TypeScript
     - Create React app with TypeScript template
     - Install dependencies (react-router-dom, axios, react-beautiful-dnd or @dnd-kit)
     - Configure build for S3/CloudFront deployment
