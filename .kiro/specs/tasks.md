@@ -645,7 +645,7 @@ The plan includes property-based tests for universal correctness properties and 
     - **Validates: Requirements 13.1**
     - Test that Lambda roles have only required permissions
 
-  - [ ] 19.6 Configure DynamoDB indexes for efficient queries
+  - [x] 19.6 Configure DynamoDB indexes for efficient queries
     - Create GSI on Users table for userId lookups
     - Create LSI on Tasks table for order-based queries
     - Create GSI on Sessions table for user session lookups
