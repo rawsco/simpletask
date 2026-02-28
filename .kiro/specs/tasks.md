@@ -687,7 +687,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Tag all resources with cost allocation tags (Environment, Service, Owner)
     - _Requirements: 23.14_
 
-  - [ ] 20.5 Implement automated resource cleanup
+  - [x] 20.5 Implement automated resource cleanup
     - Create Lambda function to delete CloudWatch logs older than 30 days
     - Schedule function to run daily
     - _Requirements: 23.15_

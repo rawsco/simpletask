@@ -16,6 +16,8 @@ import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 import * as certificatemanager from 'aws-cdk-lib/aws-certificatemanager';
 import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment';
+import * as events from 'aws-cdk-lib/aws-events';
+import * as targets from 'aws-cdk-lib/aws-events-targets';
 
 export class TaskManagerStack extends cdk.Stack {
   public readonly usersTable: dynamodb.Table;
@@ -1096,6 +1098,80 @@ export class TaskManagerStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'DashboardURL', {
       value: `https://console.aws.amazon.com/cloudwatch/home?region=${this.region}#dashboards:name=${dashboard.dashboardName}`,
       description: 'CloudWatch Dashboard URL',
+    });
+
+    // ========================================
+    // Automated Resource Cleanup
+    // ========================================
+
+    // Create IAM role for log cleanup Lambda function
+    // Requirement 23.15 - Implement automated cleanup of old CloudWatch logs
+    const logCleanupRole = new iam.Role(this, 'LogCleanupRole', {
+      roleName: 'TaskManager-LogCleanupRole',
+      assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
+      description: 'Execution role for log cleanup Lambda function',
+      managedPolicies: [
+        iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
+      ],
+    });
+
+    // Grant permissions to describe and delete log streams
+    logCleanupRole.addToPolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: [
+        'logs:DescribeLogStreams',
+        'logs:DeleteLogStream',
+      ],
+      resources: [
+        `arn:aws:logs:${this.region}:${this.account}:log-group:/aws/lambda/TaskManager*:*`,
+        `arn:aws:logs:${this.region}:${this.account}:log-group:/aws/cloudtrail/TaskManager*:*`,
+      ],
+    }));
+
+    // Create Lambda function for log cleanup
+    const logCleanupFunction = new lambda.Function(this, 'LogCleanupFunction', {
+      functionName: 'TaskManager-LogCleanup',
+      runtime: lambda.Runtime.NODEJS_18_X,
+      handler: 'log-cleanup-handler.handler',
+      code: lambda.Code.fromAsset('lambda'),
+      role: logCleanupRole,
+      environment: {
+        LOG_GROUPS: [
+          '/aws/lambda/TaskManager',
+          '/aws/cloudtrail/TaskManager',
+        ].join(','),
+      },
+      memorySize: 256, // Minimal memory for log cleanup
+      timeout: cdk.Duration.minutes(5), // 5 minutes should be enough for cleanup
+      logRetention: logs.RetentionDays.ONE_WEEK, // Keep cleanup logs for 1 week
+      description: 'Deletes CloudWatch log streams older than 30 days',
+    });
+
+    // Create EventBridge rule to run daily at 2 AM UTC
+    const cleanupRule = new events.Rule(this, 'LogCleanupSchedule', {
+      ruleName: 'TaskManager-DailyLogCleanup',
+      description: 'Triggers log cleanup Lambda function daily at 2 AM UTC',
+      schedule: events.Schedule.cron({
+        minute: '0',
+        hour: '2',
+        day: '*',
+        month: '*',
+        year: '*',
+      }),
+    });
+
+    // Add Lambda function as target for the rule
+    cleanupRule.addTarget(new targets.LambdaFunction(logCleanupFunction));
+
+    // Output cleanup function details
+    new cdk.CfnOutput(this, 'LogCleanupFunctionArn', {
+      value: logCleanupFunction.functionArn,
+      description: 'ARN of the log cleanup Lambda function',
+    });
+
+    new cdk.CfnOutput(this, 'LogCleanupSchedule', {
+      value: 'Daily at 2:00 AM UTC',
+      description: 'Schedule for automated log cleanup',
     });
 
     // ========================================
