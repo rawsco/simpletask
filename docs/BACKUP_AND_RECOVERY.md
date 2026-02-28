@@ -4,6 +4,8 @@
 
 The Task Manager Application implements comprehensive backup and disaster recovery procedures to protect against data loss and ensure business continuity. This document describes the backup strategy, recovery procedures, and testing protocols.
 
+**Note**: If using the CI/CD pipeline at https://github.com/rawsco/cicdinfra, backup verification can be integrated into the pipeline's post-deployment checks. See APPLICATION-REQUIREMENTS.md for details.
+
 ## Backup Strategy
 
 ### Automated Daily Backups

@@ -4,9 +4,53 @@
 
 This guide provides step-by-step instructions for deploying the Task Manager Application to AWS. The application uses AWS CDK to provision a serverless infrastructure including Lambda functions, API Gateway, DynamoDB tables, CloudFront distribution, and comprehensive security controls.
 
-## Prerequisites
+**Recommended Deployment Method**: The application is designed to be deployed through the external CI/CD pipeline at https://github.com/rawsco/cicdinfra. This guide covers both CI/CD pipeline deployment and manual deployment for development/testing purposes.
 
-### Required Tools
+## Deployment Methods
+
+### Method 1: CI/CD Pipeline Deployment (Recommended for Production)
+
+For production deployments, use the external CI/CD pipeline which provides:
+- Automated testing before deployment
+- Consistent deployment process
+- Rollback capabilities
+- Post-deployment verification
+- Security scanning
+
+See **APPLICATION-REQUIREMENTS.md** for detailed CI/CD pipeline integration instructions.
+
+### Method 2: Manual Deployment (Development/Testing)
+
+For development and testing environments, you can deploy manually using the steps below.
+
+## CI/CD Pipeline Deployment
+
+For production deployments using the CI/CD pipeline:
+
+1. **Review APPLICATION-REQUIREMENTS.md** for complete pipeline integration instructions
+2. **Configure environment variables** in the CI/CD pipeline
+3. **Push code to repository** - the pipeline will automatically:
+   - Build the application
+   - Run tests
+   - Deploy infrastructure
+   - Deploy frontend assets
+   - Run post-deployment verification
+
+The CI/CD pipeline handles all deployment steps automatically, including:
+- Building TypeScript code
+- Running unit and integration tests
+- Synthesizing CDK templates
+- Deploying to AWS
+- Uploading frontend to S3/CloudFront
+- Invalidating CloudFront cache
+- Running cost optimization verification
+- Sending deployment notifications
+
+## Manual Deployment (Development/Testing)
+
+### Prerequisites
+
+#### Required Tools
 
 1. **Node.js** (v18 or later)
    ```bash
@@ -417,6 +461,14 @@ aws dynamodb scan --table-name TaskManager-AuditLog --max-items 10
 Verify security events are being logged.
 
 ## Monitoring and Maintenance
+
+### CI/CD Pipeline Monitoring
+
+If using the CI/CD pipeline:
+- Monitor pipeline execution status at https://github.com/rawsco/cicdinfra
+- Review deployment logs for any issues
+- Check post-deployment verification results
+- Respond to pipeline failure notifications
 
 ### CloudWatch Dashboard
 
