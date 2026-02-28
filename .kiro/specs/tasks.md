@@ -8,8 +8,8 @@ The plan includes property-based tests for universal correctness properties and 
 
 ## Tasks
 
-- [ ] 1. Project setup and infrastructure foundation
-  - [ ] 1.1 Initialize TypeScript project with AWS CDK
+- [-] 1. Project setup and infrastructure foundation
+  - [-] 1.1 Initialize TypeScript project with AWS CDK
     - Create package.json with dependencies (aws-cdk-lib, typescript, jest, fast-check)
     - Configure tsconfig.json for Node.js Lambda runtime
     - Set up project structure: /lib (CDK), /lambda (handlers), /frontend (React)
