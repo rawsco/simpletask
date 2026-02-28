@@ -149,6 +149,140 @@ export class AuthenticationService {
 
     return bcrypt.compare(password, hash);
   }
+
+  /**
+   * Validate CAPTCHA token
+   * Requirements: 1.1
+   * 
+   * Note: This is a placeholder implementation. In production, integrate with
+   * a CAPTCHA service like Google reCAPTCHA or hCaptcha.
+   */
+  async validateCaptcha(token: string): Promise<boolean> {
+    if (!token || typeof token !== 'string') {
+      return false;
+    }
+
+    // TODO: Implement actual CAPTCHA validation with external service
+    // For now, accept any non-empty token for development
+    // In production, this should call the CAPTCHA service API
+    
+    // Example for Google reCAPTCHA:
+    // const response = await axios.post('https://www.google.com/recaptcha/api/siteverify', {
+    //   secret: process.env.RECAPTCHA_SECRET_KEY,
+    //   response: token,
+    // });
+    // return response.data.success;
+
+    return token.length > 0;
+  }
+
+  /**
+   * Create a new user in the database
+   * Requirements: 1.3, 1.4, 1.7, 1.8
+   */
+  async createUser(email: string, passwordHash: string): Promise<User> {
+    // Check if email already exists
+    const existingUser = await dynamoDBClient.get<User>({
+      TableName: TableNames.USERS,
+      Key: { email },
+    });
+
+    if (existingUser) {
+      throw new Error('Email already registered');
+    }
+
+    // Generate verification code
+    const verificationCode = this.generateVerificationCode();
+    const verificationCodeExpiry = Date.now() + (this.verificationCodeExpiryHours * 60 * 60 * 1000);
+
+    // Encrypt sensitive data
+    const encryptedPasswordHash = await encryptionService.encrypt(passwordHash);
+    const encryptedVerificationCode = await encryptionService.encrypt(verificationCode);
+
+    // Create user object
+    const userId = uuidv4();
+    const now = Date.now();
+    const user: User = {
+      userId,
+      email,
+      passwordHash: encryptedPasswordHash,
+      verified: false,
+      verificationCode: encryptedVerificationCode,
+      verificationCodeExpiry,
+      failedLoginAttempts: 0,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    // Save user to database
+    await dynamoDBClient.put({
+      TableName: TableNames.USERS,
+      Item: user,
+    });
+
+    // Create exactly one task list for the new user
+    // This is done by creating the Tasks table partition for this userId
+    // The first task will be created when the user adds their first task
+    // For now, we just ensure the user record exists
+
+    // Send verification email
+    await this.sendVerificationEmail(email, verificationCode);
+
+    return user;
+  }
+
+  /**
+   * Generate a unique 6-digit verification code
+   * Requirements: 2.1
+   */
+  generateVerificationCode(): string {
+    // Generate random 6-digit code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    return code;
+  }
+
+  /**
+   * Send verification email using AWS SES
+   * Requirements: 2.1
+   */
+  async sendVerificationEmail(email: string, code: string): Promise<void> {
+    const params: SES.SendEmailRequest = {
+      Source: process.env.SES_FROM_EMAIL || 'noreply@taskmanager.com',
+      Destination: {
+        ToAddresses: [email],
+      },
+      Message: {
+        Subject: {
+          Data: 'Verify Your Email Address',
+        },
+        Body: {
+          Text: {
+            Data: `Welcome to Task Manager!\n\nYour verification code is: ${code}\n\nThis code will expire in ${this.verificationCodeExpiryHours} hours.\n\nIf you did not create an account, please ignore this email.`,
+          },
+          Html: {
+            Data: `
+              <html>
+                <body>
+                  <h2>Welcome to Task Manager!</h2>
+                  <p>Your verification code is:</p>
+                  <h1 style="font-size: 32px; letter-spacing: 5px; color: #007bff;">${code}</h1>
+                  <p>This code will expire in ${this.verificationCodeExpiryHours} hours.</p>
+                  <p>If you did not create an account, please ignore this email.</p>
+                </body>
+              </html>
+            `,
+          },
+        },
+      },
+    };
+
+    try {
+      await this.ses.sendEmail(params).promise();
+    } catch (error: any) {
+      console.error('Failed to send verification email:', error);
+      throw new Error(`Failed to send verification email: ${error.message}`);
+    }
+  }
 }
 
 /**

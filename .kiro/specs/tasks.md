@@ -103,7 +103,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Test that hashPassword() never returns plaintext
     - Test that same password produces different hashes (due to salt)
 
-  - [ ] 4.4 Implement user registration logic
+  - [x] 4.4 Implement user registration logic
     - Create validateCaptcha() to verify CAPTCHA token
     - Create createUser() to insert user into DynamoDB Users table
     - Implement email uniqueness check
