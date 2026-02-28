@@ -400,7 +400,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Return created task
     - _Requirements: 14.1, 14.2, 14.3, 14.4_
 
-  - [ ] 11.3 Implement TaskHandler.handleUpdate
+  - [x] 11.3 Implement TaskHandler.handleUpdate
     - Extract and validate session token
     - Call AuthenticationService.validateSession()
     - Parse task ID from path and updates from body
