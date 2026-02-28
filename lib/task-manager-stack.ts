@@ -191,10 +191,12 @@ export class TaskManagerStack extends cdk.Stack {
       },
     });
 
-    // Enable automatic rotation every 90 days
-    dbEncryptionSecret.addRotationSchedule('DBEncryptionKeyRotation', {
-      automaticallyAfter: cdk.Duration.days(90),
-    });
+    // Note: Automatic rotation requires a Lambda function or hosted rotation
+    // This should be configured in a later task with proper rotation logic
+    // dbEncryptionSecret.addRotationSchedule('DBEncryptionKeyRotation', {
+    //   automaticallyAfter: cdk.Duration.days(90),
+    //   rotationLambda: rotationLambda, // To be implemented
+    // });
 
     // Secret for JWT signing key
     // Requirement 13.4, 13.5
@@ -209,10 +211,12 @@ export class TaskManagerStack extends cdk.Stack {
       },
     });
 
-    // Enable automatic rotation every 90 days
-    jwtSigningSecret.addRotationSchedule('JWTSigningKeyRotation', {
-      automaticallyAfter: cdk.Duration.days(90),
-    });
+    // Note: Automatic rotation requires a Lambda function or hosted rotation
+    // This should be configured in a later task with proper rotation logic
+    // jwtSigningSecret.addRotationSchedule('JWTSigningKeyRotation', {
+    //   automaticallyAfter: cdk.Duration.days(90),
+    //   rotationLambda: rotationLambda, // To be implemented
+    // });
 
     // Export secret ARNs for Lambda function access
     new cdk.CfnOutput(this, 'DBEncryptionSecretArn', {
@@ -467,12 +471,24 @@ export class TaskManagerStack extends cdk.Stack {
     });
 
     // Add event selectors for data events (DynamoDB operations)
-    trail.addEventSelector(cloudtrail.DataResourceType.DYNAMODB_TABLE, [
-      this.usersTable.tableArn,
-      this.tasksTable.tableArn,
-      this.sessionsTable.tableArn,
-      this.auditLogTable.tableArn,
-    ]);
+    const cfnTrail = trail.node.defaultChild as cloudtrail.CfnTrail;
+    cfnTrail.eventSelectors = [
+      {
+        readWriteType: 'All',
+        includeManagementEvents: true,
+        dataResources: [
+          {
+            type: 'AWS::DynamoDB::Table',
+            values: [
+              this.usersTable.tableArn,
+              this.tasksTable.tableArn,
+              this.sessionsTable.tableArn,
+              this.auditLogTable.tableArn,
+            ],
+          },
+        ],
+      },
+    ];
 
     // Output CloudTrail bucket name
     new cdk.CfnOutput(this, 'CloudTrailBucketName', {

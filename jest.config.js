@@ -3,6 +3,7 @@ module.exports = {
   testEnvironment: 'node',
   roots: ['<rootDir>/lib', '<rootDir>/lambda'],
   testMatch: ['**/*.test.ts'],
+  setupFiles: ['<rootDir>/jest.setup.js'],
   collectCoverageFrom: [
     'lib/**/*.ts',
     'lambda/**/*.ts',
@@ -15,6 +16,11 @@ module.exports = {
       functions: 80,
       lines: 80,
       statements: 80
+    }
+  },
+  globals: {
+    'ts-jest': {
+      isolatedModules: true
     }
   }
 };

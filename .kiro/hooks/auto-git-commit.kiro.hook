@@ -4,10 +4,7 @@
   "description": "Automatically commit and push changes to git when files are edited",
   "version": "1",
   "when": {
-    "type": "fileEdited",
-    "patterns": [
-      "**/*"
-    ]
+    "type": "postTaskExecution"
   },
   "then": {
     "type": "runCommand",
