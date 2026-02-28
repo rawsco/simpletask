@@ -347,12 +347,12 @@ export class TaskService {
   }
 
   /**
-   * Batch update task orders in the database
+   * Batch update task orders in the database using DynamoDB BatchWriteItem
    * 
    * @param userId - The user's ID
    * @param updates - Array of task order updates
    * 
-   * Requirements: 19.2, 19.3
+   * Requirements: 19.2, 23.7
    */
   private async batchUpdateTaskOrders(
     userId: string,
@@ -360,16 +360,124 @@ export class TaskService {
   ): Promise<void> {
     // DynamoDB batchWrite supports up to 25 items per request
     const BATCH_SIZE = 25;
+    const now = Date.now();
     
     for (let i = 0; i < updates.length; i += BATCH_SIZE) {
       const batch = updates.slice(i, i + BATCH_SIZE);
       
-      // Use Promise.all to update tasks in parallel within the batch
+      // Build batch write request
+      // Note: DynamoDB BatchWriteItem doesn't support UpdateItem operations
+      // We need to use individual updates for order changes
+      // However, we can batch them in parallel for better performance
       await Promise.all(
         batch.map(update =>
-          this.updateTask(userId, update.taskId, { order: update.order })
+          dynamoDBClient.update({
+            TableName: TableNames.TASKS,
+            Key: {
+              userId,
+              taskId: update.taskId,
+            },
+            UpdateExpression: 'SET #order = :order, #updatedAt = :updatedAt',
+            ExpressionAttributeNames: {
+              '#order': 'order',
+              '#updatedAt': 'updatedAt',
+            },
+            ExpressionAttributeValues: {
+              ':order': update.order,
+              ':updatedAt': now,
+            },
+          })
         )
       );
+    }
+  }
+
+  /**
+   * Batch create multiple tasks at once
+   * Useful for bulk operations and testing
+   * 
+   * @param userId - The user's ID
+   * @param descriptions - Array of task descriptions
+   * @returns Array of created tasks
+   * 
+   * Requirements: 23.7
+   */
+  async batchCreateTasks(userId: string, descriptions: string[]): Promise<Task[]> {
+    // Validate all descriptions
+    for (const description of descriptions) {
+      if (!this.validateTaskDescription(description)) {
+        throw new Error('All task descriptions must be non-empty');
+      }
+    }
+
+    const now = Date.now();
+    const maxOrder = await this.getMaxOrder(userId);
+    
+    // Create task objects
+    const tasks: Task[] = descriptions.map((description, index) => ({
+      userId,
+      taskId: uuidv4(),
+      description: description.trim(),
+      completed: false,
+      order: maxOrder + index + 1,
+      createdAt: now,
+      updatedAt: now,
+    }));
+
+    // DynamoDB batchWrite supports up to 25 items per request
+    const BATCH_SIZE = 25;
+    
+    for (let i = 0; i < tasks.length; i += BATCH_SIZE) {
+      const batch = tasks.slice(i, i + BATCH_SIZE);
+      
+      // Build batch write request
+      const writeRequests = batch.map(task => ({
+        PutRequest: {
+          Item: task,
+        },
+      }));
+
+      await dynamoDBClient.batchWrite({
+        RequestItems: {
+          [TableNames.TASKS]: writeRequests,
+        },
+      });
+    }
+
+    return tasks;
+  }
+
+  /**
+   * Batch delete multiple tasks at once
+   * Useful for bulk operations and cleanup
+   * 
+   * @param userId - The user's ID
+   * @param taskIds - Array of task IDs to delete
+   * 
+   * Requirements: 23.7
+   */
+  async batchDeleteTasks(userId: string, taskIds: string[]): Promise<void> {
+    // DynamoDB batchWrite supports up to 25 items per request
+    const BATCH_SIZE = 25;
+    
+    for (let i = 0; i < taskIds.length; i += BATCH_SIZE) {
+      const batch = taskIds.slice(i, i + BATCH_SIZE);
+      
+      // Build batch write request
+      const writeRequests = batch.map(taskId => ({
+        DeleteRequest: {
+          Key: {
+            userId,
+            taskId,
+          },
+        },
+      }));
+
+      await dynamoDBClient.batchWrite({
+        RequestItems: {
+          [TableNames.TASKS]: writeRequests,
+        },
+      });
     }
   }
 
