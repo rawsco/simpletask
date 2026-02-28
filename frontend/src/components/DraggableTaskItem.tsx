@@ -23,14 +23,40 @@ export default function DraggableTaskItem({ task, onToggle, onDelete }: Draggabl
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
-    cursor: 'grab',
     position: 'relative' as const,
-    zIndex: isDragging ? 1000 : 'auto'
+    zIndex: isDragging ? 1000 : 'auto',
+    touchAction: 'none' // Prevent default touch actions during drag
   }
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <TaskItem task={task} onToggle={onToggle} onDelete={onDelete} />
+    <div ref={setNodeRef} style={style}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        {/* Drag handle - touch-friendly */}
+        <div
+          {...attributes}
+          {...listeners}
+          style={{
+            cursor: isDragging ? 'grabbing' : 'grab',
+            padding: '8px',
+            minWidth: '44px',
+            minHeight: '44px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#666',
+            fontSize: '20px',
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
+            touchAction: 'none'
+          }}
+          aria-label="Drag to reorder"
+        >
+          ⋮⋮
+        </div>
+        <div style={{ flex: 1 }}>
+          <TaskItem task={task} onToggle={onToggle} onDelete={onDelete} />
+        </div>
+      </div>
     </div>
   )
 }

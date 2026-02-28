@@ -46,7 +46,11 @@ export default function DraggableTaskList({
   const mouseYRef = useRef<number>(0)
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // Require 8px movement before drag starts (helps with touch scrolling)
+      }
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates
     })
@@ -57,7 +61,7 @@ export default function DraggableTaskList({
     setLocalTasks(tasks)
   }, [tasks])
 
-  // Track mouse position during drag
+  // Track mouse/touch position during drag
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (isDragging) {
@@ -65,9 +69,19 @@ export default function DraggableTaskList({
       }
     }
 
+    const handleTouchMove = (e: TouchEvent) => {
+      if (isDragging && e.touches.length > 0) {
+        mouseYRef.current = e.touches[0].clientY
+      }
+    }
+
     if (isDragging) {
       window.addEventListener('mousemove', handleMouseMove)
-      return () => window.removeEventListener('mousemove', handleMouseMove)
+      window.addEventListener('touchmove', handleTouchMove, { passive: true })
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove)
+        window.removeEventListener('touchmove', handleTouchMove)
+      }
     }
   }, [isDragging])
 

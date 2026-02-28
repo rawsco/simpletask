@@ -14,20 +14,27 @@ export default function HideCompletedToggle({ hideCompleted, onToggle }: HideCom
   }
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}>
-      <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', userSelect: 'none' }}>
+    <div style={{ marginBottom: '16px' }}>
+      <label 
+        style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          cursor: 'pointer', 
+          userSelect: 'none',
+          padding: '8px',
+          minHeight: '44px',
+          WebkitTapHighlightColor: 'rgba(0, 0, 0, 0.05)'
+        }}
+      >
         <input
           type="checkbox"
           checked={hideCompleted}
           onChange={handleToggle}
           style={{
-            width: '18px',
-            height: '18px',
-            marginRight: '8px',
             cursor: 'pointer'
           }}
         />
-        <span style={{ fontSize: '14px', color: '#555' }}>
+        <span style={{ fontSize: '16px', color: '#555' }}>
           Hide completed tasks
         </span>
       </label>

@@ -15,6 +15,8 @@ body {
   /* Base font size for mobile */
   font-size: 16px;
   line-height: 1.5;
+  /* Improve touch scrolling on iOS */
+  -webkit-overflow-scrolling: touch;
 }
 
 #root {
@@ -31,6 +33,10 @@ a {
   min-width: 44px;
   /* Ensure clickable area is large enough */
   padding: 12px 16px;
+  /* Prevent text selection on touch */
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+  /* Improve touch responsiveness */
+  touch-action: manipulation;
 }
 
 /* Checkbox specific sizing */
@@ -40,6 +46,8 @@ input[type="checkbox"] {
   cursor: pointer;
   /* Add padding around checkbox for larger touch target */
   margin: 10px;
+  /* Prevent zoom on iOS when tapping */
+  touch-action: manipulation;
 }
 
 /* Input fields - touch-friendly */
@@ -53,6 +61,8 @@ textarea {
   border: 1px solid #ccc;
   border-radius: 4px;
   width: 100%;
+  /* Prevent zoom on focus for iOS */
+  touch-action: manipulation;
 }
 
 /* Button base styles */
@@ -62,11 +72,19 @@ button {
   cursor: pointer;
   transition: background-color 0.2s, opacity 0.2s;
   border: none;
+  /* Improve button tap on mobile */
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 button:disabled {
   cursor: not-allowed;
   opacity: 0.6;
+}
+
+/* Active state for touch feedback */
+button:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
 /* Links - touch-friendly */
@@ -75,10 +93,16 @@ a {
   padding: 8px 12px;
   text-decoration: none;
   color: #007bff;
+  /* Improve tap feedback */
+  -webkit-tap-highlight-color: rgba(0, 123, 255, 0.1);
 }
 
 a:hover {
   text-decoration: underline;
+}
+
+a:active {
+  opacity: 0.7;
 }
 
 /* Mobile-first layout - 320px and up */
@@ -123,6 +147,14 @@ a:hover {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   /* Ensure touch-friendly spacing */
   min-height: 60px;
+  /* Improve touch interaction */
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.05);
+  touch-action: manipulation;
+}
+
+/* Active state for touch feedback on task items */
+.task-item:active {
+  background: #f8f9fa;
 }
 
 /* Task create form */
