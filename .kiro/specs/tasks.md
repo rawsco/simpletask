@@ -31,14 +31,14 @@ The plan includes property-based tests for universal correctness properties and 
     - Configure automatic 90-day rotation
     - _Requirements: 13.4, 13.5_
 
-  - [-] 1.4 Configure API Gateway with throttling and CORS
+  - [x] 1.4 Configure API Gateway with throttling and CORS
     - Create REST API with custom domain
     - Configure throttling: 100 req/min per IP, 10 req/min for auth endpoints
     - Set up CORS headers for frontend domain
     - Configure request validation
     - _Requirements: 6.1, 6.6, 12.6, 13.8_
 
-  - [ ] 1.5 Set up CloudWatch logging and alarms
+  - [-] 1.5 Set up CloudWatch logging and alarms
     - Configure Lambda function log groups with 30-day retention
     - Create alarms for failed authentication attempts
     - Create alarms for unusual API call patterns

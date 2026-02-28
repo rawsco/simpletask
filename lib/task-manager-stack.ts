@@ -292,5 +292,141 @@ export class TaskManagerStack extends cdk.Stack {
       value: this.api.url,
       description: 'API Gateway endpoint URL',
     });
+
+    // ========================================
+    // CloudWatch Logging and Alarms
+    // ========================================
+
+    // Create SNS topic for alarm notifications
+    const alarmTopic = new sns.Topic(this, 'AlarmTopic', {
+      topicName: 'TaskManager-Alarms',
+      displayName: 'Task Manager Alarm Notifications',
+    });
+
+    // Output SNS topic ARN for subscription
+    new cdk.CfnOutput(this, 'AlarmTopicArn', {
+      value: alarmTopic.topicArn,
+      description: 'SNS topic ARN for alarm notifications - subscribe to receive alerts',
+    });
+
+    // Create log group for Lambda functions with 30-day retention
+    // Requirement 13.9, 23.15
+    const lambdaLogGroup = new logs.LogGroup(this, 'LambdaLogGroup', {
+      logGroupName: '/aws/lambda/TaskManager',
+      retention: logs.RetentionDays.ONE_MONTH, // 30-day retention
+      removalPolicy: cdk.RemovalPolicy.DESTROY, // Clean up logs when stack is deleted
+    });
+
+    // Alarm for failed authentication attempts
+    // Requirement 13.9
+    const failedAuthAlarm = new cloudwatch.Alarm(this, 'FailedAuthAlarm', {
+      alarmName: 'TaskManager-FailedAuthenticationAttempts',
+      alarmDescription: 'Alert when failed authentication attempts exceed threshold',
+      metric: new cloudwatch.Metric({
+        namespace: 'TaskManager',
+        metricName: 'FailedAuthAttempts',
+        statistic: 'Sum',
+        period: cdk.Duration.minutes(5),
+      }),
+      threshold: 10, // Alert if more than 10 failed attempts in 5 minutes
+      evaluationPeriods: 1,
+      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
+      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+    });
+
+    failedAuthAlarm.addAlarmAction(new cloudwatch_actions.SnsAction(alarmTopic));
+
+    // Alarm for unusual API call patterns
+    // Requirement 13.9
+    const unusualAPICallsAlarm = new cloudwatch.Alarm(this, 'UnusualAPICallsAlarm', {
+      alarmName: 'TaskManager-UnusualAPICallPatterns',
+      alarmDescription: 'Alert when API call rate is unusually high',
+      metric: this.api.metricCount({
+        period: cdk.Duration.minutes(5),
+        statistic: 'Sum',
+      }),
+      threshold: 5000, // Alert if more than 5000 API calls in 5 minutes
+      evaluationPeriods: 2,
+      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
+      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+    });
+
+    unusualAPICallsAlarm.addAlarmAction(new cloudwatch_actions.SnsAction(alarmTopic));
+
+    // Alarm for API Gateway 4XX errors
+    const api4xxAlarm = new cloudwatch.Alarm(this, 'API4xxAlarm', {
+      alarmName: 'TaskManager-API4xxErrors',
+      alarmDescription: 'Alert when API 4XX error rate is high',
+      metric: this.api.metricClientError({
+        period: cdk.Duration.minutes(5),
+        statistic: 'Sum',
+      }),
+      threshold: 100, // Alert if more than 100 4XX errors in 5 minutes
+      evaluationPeriods: 1,
+      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
+      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+    });
+
+    api4xxAlarm.addAlarmAction(new cloudwatch_actions.SnsAction(alarmTopic));
+
+    // Alarm for API Gateway 5XX errors
+    const api5xxAlarm = new cloudwatch.Alarm(this, 'API5xxAlarm', {
+      alarmName: 'TaskManager-API5xxErrors',
+      alarmDescription: 'Alert when API 5XX error rate is high',
+      metric: this.api.metricServerError({
+        period: cdk.Duration.minutes(5),
+        statistic: 'Sum',
+      }),
+      threshold: 10, // Alert if more than 10 5XX errors in 5 minutes
+      evaluationPeriods: 1,
+      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
+      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+    });
+
+    api5xxAlarm.addAlarmAction(new cloudwatch_actions.SnsAction(alarmTopic));
+
+    // Cost Budget with alarms at 80% and 100%
+    // Requirement 23.11, 23.12, 23.13
+    new budgets.CfnBudget(this, 'CostBudget', {
+      budget: {
+        budgetName: 'TaskManager-MonthlyBudget',
+        budgetType: 'COST',
+        timeUnit: 'MONTHLY',
+        budgetLimit: {
+          amount: 10, // $10 USD monthly budget
+          unit: 'USD',
+        },
+      },
+      notificationsWithSubscribers: [
+        {
+          notification: {
+            notificationType: 'ACTUAL',
+            comparisonOperator: 'GREATER_THAN',
+            threshold: 80, // Alert at 80% of budget
+            thresholdType: 'PERCENTAGE',
+          },
+          subscribers: [
+            {
+              subscriptionType: 'SNS',
+              address: alarmTopic.topicArn,
+            },
+          ],
+        },
+        {
+          notification: {
+            notificationType: 'ACTUAL',
+            comparisonOperator: 'GREATER_THAN',
+            threshold: 100, // Critical alert at 100% of budget
+            thresholdType: 'PERCENTAGE',
+          },
+          subscribers: [
+            {
+              subscriptionType: 'SNS',
+              address: alarmTopic.topicArn,
+            },
+          ],
+        },
+      ],
+    });
   }
 }
