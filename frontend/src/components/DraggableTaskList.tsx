@@ -43,6 +43,7 @@ export default function DraggableTaskList({
   const [isDragging, setIsDragging] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const autoScrollIntervalRef = useRef<number | null>(null)
+  const mouseYRef = useRef<number>(0)
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -56,27 +57,38 @@ export default function DraggableTaskList({
     setLocalTasks(tasks)
   }, [tasks])
 
-  // Auto-scroll logic
-  const handleAutoScroll = (clientY: number) => {
-    if (!containerRef.current) return
+  // Track mouse position during drag
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isDragging) {
+        mouseYRef.current = e.clientY
+      }
+    }
 
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove)
+      return () => window.removeEventListener('mousemove', handleMouseMove)
+    }
+  }, [isDragging])
+
+  // Auto-scroll logic
+  const performAutoScroll = () => {
+    if (!isDragging) return
+
+    const clientY = mouseYRef.current
     const viewportHeight = window.innerHeight
-    const scrollThreshold = 100 // Distance from edge to trigger scroll
+    const scrollThreshold = 100
     const maxScrollSpeed = 10
 
     let scrollSpeed = 0
 
-    // Check if near top edge
     if (clientY < scrollThreshold) {
       const distance = scrollThreshold - clientY
       scrollSpeed = -Math.min(maxScrollSpeed, (distance / scrollThreshold) * maxScrollSpeed)
-    }
-    // Check if near bottom edge
-    else if (clientY > viewportHeight - scrollThreshold) {
+    } else if (clientY > viewportHeight - scrollThreshold) {
       const distance = clientY - (viewportHeight - scrollThreshold)
       scrollSpeed = Math.min(maxScrollSpeed, (distance / scrollThreshold) * maxScrollSpeed)
       
-      // Load more tasks if near bottom and dragging
       const scrollPosition = window.scrollY + viewportHeight
       const documentHeight = document.documentElement.scrollHeight
       if (scrollPosition > documentHeight - 300 && hasMore && !isLoading) {
@@ -89,14 +101,12 @@ export default function DraggableTaskList({
     }
   }
 
-  const handleDragStart = (event: DragStartEvent) => {
+  const handleDragStart = (_event: DragStartEvent) => {
     setIsDragging(true)
   }
 
-  const handleDragOver = (event: DragOverEvent) => {
-    if (event.activatorEvent && 'clientY' in event.activatorEvent) {
-      handleAutoScroll(event.activatorEvent.clientY as number)
-    }
+  const handleDragOver = (_event: DragOverEvent) => {
+    // Auto-scroll is handled in the interval
   }
 
   const handleDragEnd = async (event: DragEndEvent) => {
@@ -134,7 +144,7 @@ export default function DraggableTaskList({
   useEffect(() => {
     if (isDragging) {
       autoScrollIntervalRef.current = window.setInterval(() => {
-        // Auto-scroll will be handled in handleDragOver
+        performAutoScroll()
       }, 16) // ~60fps
 
       return () => {
@@ -143,7 +153,7 @@ export default function DraggableTaskList({
         }
       }
     }
-  }, [isDragging])
+  }, [isDragging, hasMore, isLoading])
 
   return (
     <div ref={containerRef}>
@@ -155,7 +165,7 @@ export default function DraggableTaskList({
         onDragEnd={handleDragEnd}
       >
         <SortableContext
-          items={localTasks.map((task) => task.taskId)}
+          items={localTasks.map((task: Task) => task.taskId)}
           strategy={verticalListSortingStrategy}
         >
           <TaskList
@@ -164,7 +174,7 @@ export default function DraggableTaskList({
             hasMore={hasMore}
             isLoading={isLoading}
           >
-            {localTasks.map((task) => (
+            {localTasks.map((task: Task) => (
               <DraggableTaskItem
                 key={task.taskId}
                 task={task}

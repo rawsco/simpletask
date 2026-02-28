@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import type { Task } from '../types'
 
 interface TaskListProps {
@@ -11,17 +11,13 @@ interface TaskListProps {
 
 export default function TaskList({ tasks, onLoadMore, hasMore, isLoading, children }: TaskListProps) {
   const observerTarget = useRef<HTMLDivElement>(null)
-  const [isNearBottom, setIsNearBottom] = useState(false)
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0]
         if (entry.isIntersecting && hasMore && !isLoading) {
-          setIsNearBottom(true)
           onLoadMore()
-        } else {
-          setIsNearBottom(false)
         }
       },
       { threshold: 0, rootMargin: '200px' }
