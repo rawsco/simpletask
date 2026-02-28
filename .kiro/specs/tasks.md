@@ -38,14 +38,14 @@ The plan includes property-based tests for universal correctness properties and 
     - Configure request validation
     - _Requirements: 6.1, 6.6, 12.6, 13.8_
 
-  - [-] 1.5 Set up CloudWatch logging and alarms
+  - [x] 1.5 Set up CloudWatch logging and alarms
     - Configure Lambda function log groups with 30-day retention
     - Create alarms for failed authentication attempts
     - Create alarms for unusual API call patterns
     - Create cost budget alarm at 80% and 100% of $10 threshold
     - _Requirements: 13.9, 23.11, 23.12, 23.13, 23.15_
 
-  - [ ] 1.6 Configure CloudTrail for infrastructure audit logging
+  - [-] 1.6 Configure CloudTrail for infrastructure audit logging
     - Enable CloudTrail for all AWS API calls
     - Create tamper-proof S3 bucket with versioning for audit logs
     - _Requirements: 13.2, 13.3_

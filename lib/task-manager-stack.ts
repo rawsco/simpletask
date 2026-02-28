@@ -428,5 +428,56 @@ export class TaskManagerStack extends cdk.Stack {
         },
       ],
     });
+
+    // ========================================
+    // CloudTrail for Infrastructure Audit Logging
+    // ========================================
+
+    // Create tamper-proof S3 bucket for CloudTrail logs
+    // Requirement 13.2, 13.3
+    const cloudTrailBucket = new s3.Bucket(this, 'CloudTrailBucket', {
+      bucketName: `taskmanager-cloudtrail-${this.account}-${this.region}`,
+      encryption: s3.BucketEncryption.S3_MANAGED,
+      versioned: true, // Enable versioning for tamper-proof audit logs
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      removalPolicy: cdk.RemovalPolicy.RETAIN, // Protect audit logs
+      lifecycleRules: [
+        {
+          id: 'DeleteOldLogs',
+          enabled: true,
+          expiration: cdk.Duration.days(365), // Keep logs for 1 year
+        },
+      ],
+    });
+
+    // Enable CloudTrail for all AWS API calls
+    // Requirement 13.2
+    const trail = new cloudtrail.Trail(this, 'CloudTrail', {
+      trailName: 'TaskManager-Trail',
+      bucket: cloudTrailBucket,
+      includeGlobalServiceEvents: true, // Include IAM, CloudFront, etc.
+      isMultiRegionTrail: true, // Log events from all regions
+      managementEvents: cloudtrail.ReadWriteType.ALL, // Log all management events
+      sendToCloudWatchLogs: true, // Also send to CloudWatch for real-time monitoring
+      cloudWatchLogGroup: new logs.LogGroup(this, 'CloudTrailLogGroup', {
+        logGroupName: '/aws/cloudtrail/TaskManager',
+        retention: logs.RetentionDays.ONE_YEAR,
+        removalPolicy: cdk.RemovalPolicy.RETAIN,
+      }),
+    });
+
+    // Add event selectors for data events (DynamoDB operations)
+    trail.addEventSelector(cloudtrail.DataResourceType.DYNAMODB_TABLE, [
+      this.usersTable.tableArn,
+      this.tasksTable.tableArn,
+      this.sessionsTable.tableArn,
+      this.auditLogTable.tableArn,
+    ]);
+
+    // Output CloudTrail bucket name
+    new cdk.CfnOutput(this, 'CloudTrailBucketName', {
+      value: cloudTrailBucket.bucketName,
+      description: 'S3 bucket containing CloudTrail audit logs',
+    });
   }
 }
