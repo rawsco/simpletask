@@ -525,7 +525,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Redirect to password reset form
     - _Requirements: 3.1_
 
-  - [ ] 15.5 Create PasswordResetForm component
+  - [x] 15.5 Create PasswordResetForm component
     - Build form with code and new password fields
     - Implement client-side password validation
     - Call API client password reset method
