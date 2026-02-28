@@ -30,7 +30,7 @@ This implementation plan transforms the Task Manager frontend into a modern, pol
     - Implement reduced motion detection utility
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 36.1, 36.2, 36.3, 36.4, 36.5_
   
-  - [~] 1.4 Implement theme system with light/dark mode
+  - [x] 1.4 Implement theme system with light/dark mode
     - Create ThemeProvider context component
     - Implement theme toggle functionality
     - Add system theme detection

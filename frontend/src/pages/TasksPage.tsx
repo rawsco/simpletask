@@ -6,6 +6,7 @@ import TaskCreateForm from '../components/TaskCreateForm'
 import DraggableTaskList from '../components/DraggableTaskList'
 import HideCompletedToggle, { useHideCompletedPreference } from '../components/HideCompletedToggle'
 import TaskListWithHiding from '../components/TaskListWithHiding'
+import { ThemeToggle } from '../components/ThemeToggle'
 import type { Task } from '../types'
 
 export default function TasksPage() {
@@ -112,9 +113,12 @@ export default function TasksPage() {
     <div className="tasks-container">
       <div className="page-header">
         <h1>My Tasks</h1>
-        <button onClick={handleLogout} style={{ backgroundColor: '#6c757d', color: 'white' }}>
-          Logout
-        </button>
+        <div className="flex items-center gap-2">
+          <ThemeToggle variant="dropdown" />
+          <button onClick={handleLogout} style={{ backgroundColor: '#6c757d', color: 'white' }}>
+            Logout
+          </button>
+        </div>
       </div>
 
       <TaskCreateForm onCreate={handleCreateTask} />
