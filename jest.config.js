@@ -1,11 +1,10 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: './jest-environment.js',
-  roots: ['<rootDir>/lib', '<rootDir>/lambda'],
+  roots: ['<rootDir>/lambda'],
   testMatch: ['**/*.test.ts'],
   setupFiles: ['<rootDir>/jest.setup.js'],
   collectCoverageFrom: [
-    'lib/**/*.ts',
     'lambda/**/*.ts',
     '!**/*.d.ts',
     '!**/node_modules/**'
