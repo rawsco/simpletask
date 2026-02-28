@@ -413,6 +413,79 @@ export class TaskService {
   filterCompletedTasks(tasks: Task[]): Task[] {
     return tasks.filter(task => !task.completed);
   }
+
+  /**
+   * Get user's hide completed tasks preference
+   * 
+   * @param userId - The user's ID
+   * @returns The user's preference value (default: false)
+   * 
+   * Requirements: 21.5
+   */
+  async getHideCompletedPreference(userId: string): Promise<boolean> {
+    // Query using UserIdIndex GSI
+    const result = await dynamoDBClient.query<any>({
+      TableName: TableNames.USERS,
+      IndexName: 'UserIdIndex',
+      KeyConditionExpression: 'userId = :userId',
+      ExpressionAttributeValues: {
+        ':userId': userId,
+      },
+      ProjectionExpression: 'preferences',
+      Limit: 1,
+    });
+
+    if (result.length === 0) {
+      return false;
+    }
+
+    return result[0]?.preferences?.hideCompletedTasks ?? false;
+  }
+
+  /**
+   * Set user's hide completed tasks preference
+   * 
+   * @param userId - The user's ID
+   * @param hideCompleted - Whether to hide completed tasks
+   * 
+   * Requirements: 21.5
+   */
+  async setHideCompletedPreference(userId: string, hideCompleted: boolean): Promise<void> {
+    // First, get the user's email (partition key) using the GSI
+    const users = await dynamoDBClient.query<any>({
+      TableName: TableNames.USERS,
+      IndexName: 'UserIdIndex',
+      KeyConditionExpression: 'userId = :userId',
+      ExpressionAttributeValues: {
+        ':userId': userId,
+      },
+      ProjectionExpression: 'email',
+      Limit: 1,
+    });
+
+    if (users.length === 0) {
+      throw new Error('User not found');
+    }
+
+    const email = users[0].email;
+
+    // Update the user's preferences
+    await dynamoDBClient.update({
+      TableName: TableNames.USERS,
+      Key: {
+        email,
+      },
+      UpdateExpression: 'SET #prefs = if_not_exists(#prefs, :emptyPrefs), #prefs.#hideCompleted = :hideCompleted',
+      ExpressionAttributeNames: {
+        '#prefs': 'preferences',
+        '#hideCompleted': 'hideCompletedTasks',
+      },
+      ExpressionAttributeValues: {
+        ':hideCompleted': hideCompleted,
+        ':emptyPrefs': {},
+      },
+    });
+  }
 }
 
 /**

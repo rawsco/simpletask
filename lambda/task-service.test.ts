@@ -591,4 +591,90 @@ describe('TaskService', () => {
       expect(filtered).toEqual(tasks);
     });
   });
+
+  describe('getHideCompletedPreference', () => {
+    it('should return user preference when set', async () => {
+      (dynamoDBClient.query as jest.Mock).mockResolvedValue([
+        {
+          preferences: {
+            hideCompletedTasks: true,
+          },
+        },
+      ]);
+
+      const result = await taskService.getHideCompletedPreference(mockUserId);
+
+      expect(result).toBe(true);
+      expect(dynamoDBClient.query).toHaveBeenCalledWith(
+        expect.objectContaining({
+          TableName: 'Users',
+          IndexName: 'UserIdIndex',
+          KeyConditionExpression: 'userId = :userId',
+        })
+      );
+    });
+
+    it('should return false when preference not set', async () => {
+      (dynamoDBClient.query as jest.Mock).mockResolvedValue([{}]);
+
+      const result = await taskService.getHideCompletedPreference(mockUserId);
+
+      expect(result).toBe(false);
+    });
+
+    it('should return false when user not found', async () => {
+      (dynamoDBClient.query as jest.Mock).mockResolvedValue([]);
+
+      const result = await taskService.getHideCompletedPreference(mockUserId);
+
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('setHideCompletedPreference', () => {
+    it('should set user preference', async () => {
+      const mockEmail = 'user@example.com';
+
+      (dynamoDBClient.query as jest.Mock).mockResolvedValue([
+        { email: mockEmail },
+      ]);
+
+      (dynamoDBClient.update as jest.Mock).mockResolvedValue({});
+
+      await taskService.setHideCompletedPreference(mockUserId, true);
+
+      expect(dynamoDBClient.query).toHaveBeenCalledWith(
+        expect.objectContaining({
+          TableName: 'Users',
+          IndexName: 'UserIdIndex',
+        })
+      );
+
+      expect(dynamoDBClient.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          TableName: 'Users',
+          Key: {
+            email: mockEmail,
+          },
+          ExpressionAttributeNames: expect.objectContaining({
+            '#prefs': 'preferences',
+            '#hideCompleted': 'hideCompletedTasks',
+          }),
+          ExpressionAttributeValues: expect.objectContaining({
+            ':hideCompleted': true,
+          }),
+        })
+      );
+    });
+
+    it('should throw error if user not found', async () => {
+      (dynamoDBClient.query as jest.Mock).mockResolvedValue([]);
+
+      await expect(
+        taskService.setHideCompletedPreference(mockUserId, true)
+      ).rejects.toThrow('User not found');
+
+      expect(dynamoDBClient.update).not.toHaveBeenCalled();
+    });
+  });
 });

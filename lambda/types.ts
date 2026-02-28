@@ -24,6 +24,14 @@ export interface User {
   lockedUntil?: number; // Unix timestamp
   createdAt: number; // Unix timestamp
   updatedAt: number; // Unix timestamp
+  preferences?: UserPreferences; // User preferences
+}
+
+/**
+ * User preferences for UI settings
+ */
+export interface UserPreferences {
+  hideCompletedTasks: boolean; // Whether to hide completed tasks in the UI
 }
 
 /**

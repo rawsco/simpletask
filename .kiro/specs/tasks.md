@@ -301,7 +301,7 @@ The plan includes property-based tests for universal correctness properties and 
     - **Validates: Requirements 19.3**
     - Test that tasks are displayed in user-defined order
 
-  - [ ] 8.9 Implement task filtering
+  - [x] 8.9 Implement task filtering
     - Create filterCompletedTasks() to hide completed tasks
     - Implement user preference persistence for hide completed toggle
     - _Requirements: 21.1, 21.2, 21.5_
@@ -435,7 +435,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Test task reordering
     - Test unauthorized access attempts
 
-- [ ] 12. Security middleware and headers
+- [~] 12. Security middleware and headers
   - [ ] 12.1 Implement rate limiting middleware
     - Create middleware to check rate limits before handler execution
     - Call RateLimitService.checkIPRateLimit()
@@ -470,10 +470,10 @@ The plan includes property-based tests for universal correctness properties and 
     - **Validates: Requirements 12.1, 12.2, 12.3, 12.4, 12.5, 12.6, 12.7**
     - Test that all responses include required security headers
 
-- [ ] 13. Checkpoint - Ensure backend implementation complete
+- [~] 13. Checkpoint - Ensure backend implementation complete
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 14. Frontend - React application setup
+- [~] 14. Frontend - React application setup
   - [ ] 14.1 Initialize React application with TypeScript
     - Create React app with TypeScript template
     - Install dependencies (react-router-dom, axios, react-beautiful-dnd or @dnd-kit)
@@ -493,7 +493,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Implement protected route component for authenticated pages
     - Store session token in localStorage with expiry
 
-- [ ] 15. Frontend - Authentication UI components
+- [~] 15. Frontend - Authentication UI components
   - [ ] 15.1 Create RegistrationForm component
     - Build form with email, password, and CAPTCHA fields
     - Implement client-side validation for email format and password complexity
@@ -538,7 +538,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Test error message display
     - Test successful flow redirects
 
-- [ ] 16. Frontend - Task management UI components
+- [~] 16. Frontend - Task management UI components
   - [ ] 16.1 Create TaskList component
     - Fetch and display tasks on mount
     - Implement infinite scroll with IntersectionObserver
@@ -590,7 +590,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Test drag-and-drop reordering
     - Test hide completed toggle
 
-- [ ] 17. Frontend - Responsive design and styling
+- [~] 17. Frontend - Responsive design and styling
   - [ ] 17.1 Implement responsive CSS layout
     - Create mobile-first CSS with media queries
     - Ensure layout adapts to different screen sizes
@@ -608,10 +608,10 @@ The plan includes property-based tests for universal correctness properties and 
     - Test touch interactions
     - Test accessibility with screen readers
 
-- [ ] 18. Checkpoint - Ensure frontend implementation complete
+- [~] 18. Checkpoint - Ensure frontend implementation complete
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 19. Infrastructure deployment and optimization
+- [~] 19. Infrastructure deployment and optimization
   - [ ] 19.1 Configure S3 bucket for frontend hosting
     - Create S3 bucket with static website hosting
     - Configure bucket policy for CloudFront access
@@ -663,7 +663,7 @@ The plan includes property-based tests for universal correctness properties and 
     - **Validates: Requirements 23.6, 23.7**
     - Test that queries use indexes and batch operations where possible
 
-- [ ] 20. Monitoring and cost management
+- [~] 20. Monitoring and cost management
   - [ ] 20.1 Set up CloudWatch dashboards
     - Create dashboard for API metrics (latency, error rate, request count)
     - Create dashboard for Lambda metrics (invocations, duration, errors)
@@ -697,7 +697,7 @@ The plan includes property-based tests for universal correctness properties and 
     - **Validates: Requirements 23.15**
     - Test that logs older than 30 days are deleted
 
-- [ ] 21. SSL certificate management
+- [~] 21. SSL certificate management
   - [ ] 21.1 Set up SSL certificate with ACM
     - Request certificate from AWS Certificate Manager
     - Configure DNS validation
@@ -714,7 +714,7 @@ The plan includes property-based tests for universal correctness properties and 
     - **Validates: Requirements 5.4**
     - Test that certificates within 30 days of expiry trigger renewal
 
-- [ ] 22. DynamoDB backup and recovery
+- [~] 22. DynamoDB backup and recovery
   - [ ] 22.1 Enable DynamoDB point-in-time recovery
     - Enable PITR for Users, Tasks, Sessions, AuditLog tables
     - _Requirements: 13.12_
@@ -725,7 +725,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Configure 30-day backup retention
     - _Requirements: 13.10_
 
-- [ ] 23. Final integration and testing
+- [~] 23. Final integration and testing
   - [ ] 23.1 Deploy complete stack to test environment
     - Deploy CDK stack to AWS test account
     - Verify all resources created successfully
@@ -777,7 +777,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Document backup and recovery procedures
     - Document cost optimization strategies
 
-- [ ] 24. Final checkpoint - Production readiness
+- [~] 24. Final checkpoint - Production readiness
   - Ensure all tests pass, ask the user if questions arise.
 
 
