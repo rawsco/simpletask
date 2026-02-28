@@ -39,7 +39,7 @@ export default function PasswordResetRequest({ onSuccess }: PasswordResetRequest
 
   return (
     <form onSubmit={handleSubmit}>
-      <div style={{ marginBottom: '15px' }}>
+      <div className="form-group">
         <label htmlFor="email">Email:</label>
         <input
           id="email"
@@ -48,12 +48,19 @@ export default function PasswordResetRequest({ onSuccess }: PasswordResetRequest
           onChange={(e) => setEmail(e.target.value)}
           required
           placeholder="Enter your email address"
-          style={{ width: '100%', padding: '8px', marginTop: '5px' }}
         />
       </div>
-      {error && <div style={{ color: 'red', marginBottom: '15px' }}>{error}</div>}
-      {successMessage && <div style={{ color: 'green', marginBottom: '15px' }}>{successMessage}</div>}
-      <button type="submit" disabled={loading} style={{ width: '100%', padding: '10px' }}>
+      {error && <div className="error-message">{error}</div>}
+      {successMessage && <div className="success-message">{successMessage}</div>}
+      <button 
+        type="submit" 
+        disabled={loading} 
+        style={{ 
+          width: '100%',
+          backgroundColor: '#007bff',
+          color: 'white'
+        }}
+      >
         {loading ? 'Sending...' : 'Send Reset Code'}
       </button>
     </form>

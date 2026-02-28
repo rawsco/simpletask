@@ -40,7 +40,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
 
   return (
     <form onSubmit={handleSubmit}>
-      <div style={{ marginBottom: '15px' }}>
+      <div className="form-group">
         <label htmlFor="email">Email:</label>
         <input
           id="email"
@@ -48,10 +48,9 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          style={{ width: '100%', padding: '8px', marginTop: '5px' }}
         />
       </div>
-      <div style={{ marginBottom: '15px' }}>
+      <div className="form-group">
         <label htmlFor="password">Password:</label>
         <input
           id="password"
@@ -59,11 +58,18 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          style={{ width: '100%', padding: '8px', marginTop: '5px' }}
         />
       </div>
-      {error && <div style={{ color: 'red', marginBottom: '15px' }}>{error}</div>}
-      <button type="submit" disabled={loading} style={{ width: '100%', padding: '10px' }}>
+      {error && <div className="error-message">{error}</div>}
+      <button 
+        type="submit" 
+        disabled={loading} 
+        style={{ 
+          width: '100%', 
+          backgroundColor: '#007bff', 
+          color: 'white' 
+        }}
+      >
         {loading ? 'Logging in...' : 'Login'}
       </button>
     </form>

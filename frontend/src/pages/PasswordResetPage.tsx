@@ -6,15 +6,15 @@ export default function PasswordResetPage() {
   const email = location.state?.email || ''
 
   return (
-    <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px' }}>
-      <h1>Reset Password</h1>
+    <div className="auth-container">
+      <h1 style={{ marginBottom: '24px' }}>Reset Password</h1>
       <p style={{ marginBottom: '20px' }}>
         Enter the reset code sent to {email || 'your email'} and your new password.
       </p>
       {email ? (
         <PasswordResetForm email={email} />
       ) : (
-        <div style={{ color: 'red', marginBottom: '15px' }}>
+        <div className="error-message">
           Email address not provided. Please request a password reset again.
         </div>
       )}

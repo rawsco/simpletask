@@ -6,15 +6,15 @@ export default function VerifyPage() {
   const email = location.state?.email || ''
 
   return (
-    <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px' }}>
-      <h1>Verify Email</h1>
+    <div className="auth-container">
+      <h1 style={{ marginBottom: '24px' }}>Verify Email</h1>
       <p style={{ marginBottom: '20px' }}>
         Enter the verification code sent to {email || 'your email'}
       </p>
       {email ? (
         <EmailVerificationForm email={email} />
       ) : (
-        <div style={{ color: 'red', marginBottom: '15px' }}>
+        <div className="error-message">
           Email address not provided. Please register again.
         </div>
       )}

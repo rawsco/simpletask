@@ -73,7 +73,7 @@ export default function PasswordResetForm({ email, onSuccess }: PasswordResetFor
 
   return (
     <form onSubmit={handleSubmit}>
-      <div style={{ marginBottom: '15px' }}>
+      <div className="form-group">
         <label htmlFor="code">Reset Code:</label>
         <input
           id="code"
@@ -82,10 +82,9 @@ export default function PasswordResetForm({ email, onSuccess }: PasswordResetFor
           onChange={(e) => setCode(e.target.value)}
           required
           placeholder="Enter the code from your email"
-          style={{ width: '100%', padding: '8px', marginTop: '5px' }}
         />
       </div>
-      <div style={{ marginBottom: '15px' }}>
+      <div className="form-group">
         <label htmlFor="newPassword">New Password:</label>
         <input
           id="newPassword"
@@ -93,19 +92,26 @@ export default function PasswordResetForm({ email, onSuccess }: PasswordResetFor
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
           required
-          style={{ width: '100%', padding: '8px', marginTop: '5px' }}
         />
         {validationErrors.length > 0 && (
-          <div style={{ color: 'red', fontSize: '12px', marginTop: '5px' }}>
+          <div style={{ color: '#dc3545', fontSize: '14px', marginTop: '8px' }}>
             {validationErrors.map((err, idx) => (
               <div key={idx}>• {err}</div>
             ))}
           </div>
         )}
       </div>
-      {error && <div style={{ color: 'red', marginBottom: '15px' }}>{error}</div>}
-      {successMessage && <div style={{ color: 'green', marginBottom: '15px' }}>{successMessage}</div>}
-      <button type="submit" disabled={loading} style={{ width: '100%', padding: '10px' }}>
+      {error && <div className="error-message">{error}</div>}
+      {successMessage && <div className="success-message">{successMessage}</div>}
+      <button 
+        type="submit" 
+        disabled={loading} 
+        style={{ 
+          width: '100%',
+          backgroundColor: '#007bff',
+          color: 'white'
+        }}
+      >
         {loading ? 'Resetting...' : 'Reset Password'}
       </button>
     </form>

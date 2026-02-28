@@ -34,13 +34,7 @@ export default function TaskItem({ task, onToggle, onDelete }: TaskItemProps) {
   }
 
   return (
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      padding: '12px',
-      border: '1px solid #e0e0e0',
-      borderRadius: '4px',
-      marginBottom: '8px',
+    <div className="task-item" style={{
       backgroundColor: task.completed ? '#f5f5f5' : '#fff',
       opacity: isDeleting ? 0.5 : 1,
       transition: 'background-color 0.2s, opacity 0.2s'
@@ -51,9 +45,6 @@ export default function TaskItem({ task, onToggle, onDelete }: TaskItemProps) {
         onChange={handleToggle}
         disabled={isDeleting}
         style={{
-          width: '20px',
-          height: '20px',
-          marginRight: '12px',
           cursor: isDeleting ? 'not-allowed' : 'pointer'
         }}
       />
@@ -61,7 +52,8 @@ export default function TaskItem({ task, onToggle, onDelete }: TaskItemProps) {
         flex: 1,
         textDecoration: task.completed ? 'line-through' : 'none',
         color: task.completed ? '#999' : '#333',
-        fontSize: '16px'
+        fontSize: '16px',
+        wordBreak: 'break-word'
       }}>
         {task.description}
       </span>
@@ -70,30 +62,24 @@ export default function TaskItem({ task, onToggle, onDelete }: TaskItemProps) {
           onClick={handleDeleteClick}
           disabled={isDeleting}
           style={{
-            padding: '6px 12px',
             backgroundColor: '#dc3545',
             color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: isDeleting ? 'not-allowed' : 'pointer',
-            fontSize: '14px'
+            fontSize: '14px',
+            minWidth: '80px'
           }}
         >
           Delete
         </button>
       ) : (
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           <button
             onClick={handleConfirmDelete}
             disabled={isDeleting}
             style={{
-              padding: '6px 12px',
               backgroundColor: '#dc3545',
               color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: isDeleting ? 'not-allowed' : 'pointer',
-              fontSize: '14px'
+              fontSize: '14px',
+              minWidth: '80px'
             }}
           >
             Confirm
@@ -102,13 +88,10 @@ export default function TaskItem({ task, onToggle, onDelete }: TaskItemProps) {
             onClick={handleCancelDelete}
             disabled={isDeleting}
             style={{
-              padding: '6px 12px',
               backgroundColor: '#6c757d',
               color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: isDeleting ? 'not-allowed' : 'pointer',
-              fontSize: '14px'
+              fontSize: '14px',
+              minWidth: '80px'
             }}
           >
             Cancel

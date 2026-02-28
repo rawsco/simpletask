@@ -37,7 +37,7 @@ export default function TaskList({ tasks, onLoadMore, hasMore, isLoading, childr
 
   if (tasks.length === 0 && !isLoading) {
     return (
-      <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+      <div className="empty-state">
         <p>No tasks yet. Create your first task to get started!</p>
       </div>
     )
@@ -47,22 +47,8 @@ export default function TaskList({ tasks, onLoadMore, hasMore, isLoading, childr
     <div>
       {children}
       {isLoading && (
-        <div style={{ textAlign: 'center', padding: '20px', color: '#666' }}>
-          <div style={{ 
-            display: 'inline-block',
-            width: '20px',
-            height: '20px',
-            border: '3px solid #f3f3f3',
-            borderTop: '3px solid #3498db',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite'
-          }} />
-          <style>{`
-            @keyframes spin {
-              0% { transform: rotate(0deg); }
-              100% { transform: rotate(360deg); }
-            }
-          `}</style>
+        <div className="loading-indicator">
+          <div className="spinner" />
           <p style={{ marginTop: '10px' }}>Loading tasks...</p>
         </div>
       )}

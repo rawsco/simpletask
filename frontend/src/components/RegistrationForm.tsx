@@ -82,7 +82,7 @@ export default function RegistrationForm({ onSuccess }: RegistrationFormProps) {
 
   return (
     <form onSubmit={handleSubmit}>
-      <div style={{ marginBottom: '15px' }}>
+      <div className="form-group">
         <label htmlFor="email">Email:</label>
         <input
           id="email"
@@ -90,10 +90,9 @@ export default function RegistrationForm({ onSuccess }: RegistrationFormProps) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          style={{ width: '100%', padding: '8px', marginTop: '5px' }}
         />
       </div>
-      <div style={{ marginBottom: '15px' }}>
+      <div className="form-group">
         <label htmlFor="password">Password:</label>
         <input
           id="password"
@@ -101,17 +100,16 @@ export default function RegistrationForm({ onSuccess }: RegistrationFormProps) {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          style={{ width: '100%', padding: '8px', marginTop: '5px' }}
         />
         {validationErrors.length > 0 && (
-          <div style={{ color: 'red', fontSize: '12px', marginTop: '5px' }}>
+          <div style={{ color: '#dc3545', fontSize: '14px', marginTop: '8px' }}>
             {validationErrors.map((err, idx) => (
               <div key={idx}>• {err}</div>
             ))}
           </div>
         )}
       </div>
-      <div style={{ marginBottom: '15px' }}>
+      <div className="form-group">
         <label htmlFor="captcha">CAPTCHA Token:</label>
         <input
           id="captcha"
@@ -120,14 +118,21 @@ export default function RegistrationForm({ onSuccess }: RegistrationFormProps) {
           onChange={(e) => setCaptchaToken(e.target.value)}
           required
           placeholder="Enter CAPTCHA response"
-          style={{ width: '100%', padding: '8px', marginTop: '5px' }}
         />
         <div style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
           Note: CAPTCHA integration pending
         </div>
       </div>
-      {error && <div style={{ color: 'red', marginBottom: '15px' }}>{error}</div>}
-      <button type="submit" disabled={loading} style={{ width: '100%', padding: '10px' }}>
+      {error && <div className="error-message">{error}</div>}
+      <button 
+        type="submit" 
+        disabled={loading} 
+        style={{ 
+          width: '100%', 
+          backgroundColor: '#007bff', 
+          color: 'white' 
+        }}
+      >
         {loading ? 'Registering...' : 'Register'}
       </button>
     </form>

@@ -56,7 +56,7 @@ export default function EmailVerificationForm({ email, onSuccess }: EmailVerific
   return (
     <div>
       <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '15px' }}>
+        <div className="form-group">
           <label htmlFor="code">Verification Code:</label>
           <input
             id="code"
@@ -65,12 +65,20 @@ export default function EmailVerificationForm({ email, onSuccess }: EmailVerific
             onChange={(e) => setCode(e.target.value)}
             required
             placeholder="Enter the code from your email"
-            style={{ width: '100%', padding: '8px', marginTop: '5px' }}
           />
         </div>
-        {error && <div style={{ color: 'red', marginBottom: '15px' }}>{error}</div>}
-        {resendMessage && <div style={{ color: 'green', marginBottom: '15px' }}>{resendMessage}</div>}
-        <button type="submit" disabled={loading} style={{ width: '100%', padding: '10px', marginBottom: '10px' }}>
+        {error && <div className="error-message">{error}</div>}
+        {resendMessage && <div className="success-message">{resendMessage}</div>}
+        <button 
+          type="submit" 
+          disabled={loading} 
+          style={{ 
+            width: '100%', 
+            marginBottom: '10px',
+            backgroundColor: '#007bff',
+            color: 'white'
+          }}
+        >
           {loading ? 'Verifying...' : 'Verify Email'}
         </button>
       </form>
@@ -80,11 +88,9 @@ export default function EmailVerificationForm({ email, onSuccess }: EmailVerific
         disabled={resendLoading}
         style={{
           width: '100%',
-          padding: '10px',
           backgroundColor: '#f0f0f0',
           color: '#333',
-          border: '1px solid #ccc',
-          cursor: resendLoading ? 'not-allowed' : 'pointer'
+          border: '1px solid #ccc'
         }}
       >
         {resendLoading ? 'Sending...' : 'Resend Code'}

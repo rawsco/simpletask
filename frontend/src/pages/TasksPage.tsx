@@ -109,10 +109,10 @@ export default function TasksPage() {
   }
 
   return (
-    <div style={{ maxWidth: '800px', margin: '50px auto', padding: '20px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+    <div className="tasks-container">
+      <div className="page-header">
         <h1>My Tasks</h1>
-        <button onClick={handleLogout} style={{ padding: '8px 16px' }}>
+        <button onClick={handleLogout} style={{ backgroundColor: '#6c757d', color: 'white' }}>
           Logout
         </button>
       </div>

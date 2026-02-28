@@ -590,8 +590,8 @@ The plan includes property-based tests for universal correctness properties and 
     - Test drag-and-drop reordering
     - Test hide completed toggle
 
-- [~] 17. Frontend - Responsive design and styling
-  - [ ] 17.1 Implement responsive CSS layout
+- [-] 17. Frontend - Responsive design and styling
+  - [x] 17.1 Implement responsive CSS layout
     - Create mobile-first CSS with media queries
     - Ensure layout adapts to different screen sizes
     - Test on mobile (320px), tablet (768px), and desktop (1024px+) viewports
