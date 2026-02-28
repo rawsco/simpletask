@@ -620,6 +620,203 @@ export class AuthenticationService {
       throw new Error('Failed to invalidate sessions');
     }
   }
+
+  /**
+   * Record a failed login attempt
+   * Requirements: 9.1
+   */
+  async recordFailedLogin(email: string): Promise<void> {
+    if (!email) {
+      return;
+    }
+
+    const now = Date.now();
+    const failedLoginWindowMs = this.failedLoginWindowMinutes * 60 * 1000;
+
+    // Get user from database
+    const user = await dynamoDBClient.get<User>({
+      TableName: TableNames.USERS,
+      Key: { email },
+    });
+
+    if (!user) {
+      return;
+    }
+
+    // Check if we need to reset the counter (outside the window)
+    let failedAttempts = user.failedLoginAttempts || 0;
+    const lastFailedAt = user.lastFailedLoginAt || 0;
+
+    if (now - lastFailedAt > failedLoginWindowMs) {
+      // Reset counter if outside the window
+      failedAttempts = 0;
+    }
+
+    // Increment failed attempts
+    failedAttempts += 1;
+
+    // Check if account should be locked
+    if (failedAttempts >= this.maxFailedLoginAttempts) {
+      await this.lockAccount(email, this.accountLockoutDurationMinutes);
+    } else {
+      // Update failed login attempts
+      await dynamoDBClient.update({
+        TableName: TableNames.USERS,
+        Key: { email },
+        UpdateExpression: 'SET failedLoginAttempts = :attempts, lastFailedLoginAt = :lastFailedAt, updatedAt = :updatedAt',
+        ExpressionAttributeValues: {
+          ':attempts': failedAttempts,
+          ':lastFailedAt': now,
+          ':updatedAt': now,
+        },
+      });
+    }
+  }
+
+  /**
+   * Check if account is locked
+   * Requirements: 9.2
+   */
+  async isAccountLocked(email: string): Promise<boolean> {
+    if (!email) {
+      return false;
+    }
+
+    // Get user from database
+    const user = await dynamoDBClient.get<User>({
+      TableName: TableNames.USERS,
+      Key: { email },
+    });
+
+    if (!user || !user.lockedUntil) {
+      return false;
+    }
+
+    const now = Date.now();
+    
+    // Check if lockout period has expired
+    if (now >= user.lockedUntil) {
+      // Automatically unlock the account
+      await this.unlockAccount(email);
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Lock an account for specified duration
+   * Requirements: 9.1, 9.3, 9.6
+   */
+  async lockAccount(email: string, durationMinutes: number): Promise<void> {
+    if (!email) {
+      return;
+    }
+
+    const now = Date.now();
+    const lockedUntil = now + (durationMinutes * 60 * 1000);
+
+    // Update user with lockout information
+    await dynamoDBClient.update({
+      TableName: TableNames.USERS,
+      Key: { email },
+      UpdateExpression: 'SET lockedUntil = :lockedUntil, failedLoginAttempts = :zero, updatedAt = :updatedAt',
+      ExpressionAttributeValues: {
+        ':lockedUntil': lockedUntil,
+        ':zero': 0,
+        ':updatedAt': now,
+      },
+    });
+
+    // Send lockout notification email
+    await this.sendAccountLockoutEmail(email, durationMinutes);
+  }
+
+  /**
+   * Unlock an account
+   * Requirements: 9.3, 9.7
+   */
+  async unlockAccount(email: string): Promise<void> {
+    if (!email) {
+      return;
+    }
+
+    // Clear lockout and reset failed login attempts
+    await dynamoDBClient.update({
+      TableName: TableNames.USERS,
+      Key: { email },
+      UpdateExpression: 'SET lockedUntil = :null, failedLoginAttempts = :zero, updatedAt = :updatedAt',
+      ExpressionAttributeValues: {
+        ':null': null,
+        ':zero': 0,
+        ':updatedAt': Date.now(),
+      },
+    });
+  }
+
+  /**
+   * Reset failed login counter on successful login
+   * Requirements: 9.4
+   */
+  async resetFailedLoginCounter(email: string): Promise<void> {
+    if (!email) {
+      return;
+    }
+
+    await dynamoDBClient.update({
+      TableName: TableNames.USERS,
+      Key: { email },
+      UpdateExpression: 'SET failedLoginAttempts = :zero, lastFailedLoginAt = :null, updatedAt = :updatedAt',
+      ExpressionAttributeValues: {
+        ':zero': 0,
+        ':null': null,
+        ':updatedAt': Date.now(),
+      },
+    });
+  }
+
+  /**
+   * Send account lockout notification email
+   * Requirements: 9.6
+   */
+  async sendAccountLockoutEmail(email: string, durationMinutes: number): Promise<void> {
+    const params: SES.SendEmailRequest = {
+      Source: process.env.SES_FROM_EMAIL || 'noreply@taskmanager.com',
+      Destination: {
+        ToAddresses: [email],
+      },
+      Message: {
+        Subject: {
+          Data: 'Account Locked - Security Alert',
+        },
+        Body: {
+          Text: {
+            Data: `Your account has been temporarily locked due to multiple failed login attempts.\n\nYour account will be automatically unlocked in ${durationMinutes} minutes.\n\nIf you did not attempt to log in, please reset your password immediately to secure your account.\n\nYou can also unlock your account immediately by completing the password reset process.`,
+          },
+          Html: {
+            Data: `
+              <html>
+                <body>
+                  <h2>Account Locked - Security Alert</h2>
+                  <p>Your account has been temporarily locked due to multiple failed login attempts.</p>
+                  <p><strong>Your account will be automatically unlocked in ${durationMinutes} minutes.</strong></p>
+                  <p>If you did not attempt to log in, please reset your password immediately to secure your account.</p>
+                  <p>You can also unlock your account immediately by completing the password reset process.</p>
+                </body>
+              </html>
+            `,
+          },
+        },
+      },
+    };
+
+    try {
+      await this.ses.sendEmail(params).promise();
+    } catch (error: any) {
+      console.error('Failed to send account lockout email:', error);
+      // Don't throw error - lockout should still proceed even if email fails
+    }
+  }
 }
 
 /**

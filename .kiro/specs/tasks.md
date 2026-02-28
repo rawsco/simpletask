@@ -159,7 +159,7 @@ The plan includes property-based tests for universal correctness properties and 
     - **Validates: Requirements 7.3**
     - Test that user actions reset inactivity timer
 
-  - [ ] 4.13 Implement account lockout logic
+  - [x] 4.13 Implement account lockout logic
     - Create recordFailedLogin() to increment failed attempt counter
     - Create isAccountLocked() to check lockout status
     - Create lockAccount() to set 15-minute lockout after 5 failed attempts
