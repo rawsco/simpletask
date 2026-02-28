@@ -19,6 +19,7 @@ export class TaskManagerStack extends cdk.Stack {
   public readonly sessionsTable: dynamodb.Table;
   public readonly auditLogTable: dynamodb.Table;
   public readonly rateLimitsTable: dynamodb.Table;
+  public readonly api: apigateway.RestApi;
 
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);

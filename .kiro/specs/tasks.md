@@ -25,13 +25,13 @@ The plan includes property-based tests for universal correctness properties and 
     - Configure on-demand billing mode
     - _Requirements: 11.7, 13.7, 23.3_
 
-  - [-] 1.3 Set up AWS Secrets Manager for credentials
+  - [x] 1.3 Set up AWS Secrets Manager for credentials
     - Create secret for database encryption keys
     - Create secret for JWT signing key
     - Configure automatic 90-day rotation
     - _Requirements: 13.4, 13.5_
 
-  - [ ] 1.4 Configure API Gateway with throttling and CORS
+  - [-] 1.4 Configure API Gateway with throttling and CORS
     - Create REST API with custom domain
     - Configure throttling: 100 req/min per IP, 10 req/min for auth endpoints
     - Set up CORS headers for frontend domain
