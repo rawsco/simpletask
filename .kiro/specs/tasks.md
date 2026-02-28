@@ -178,7 +178,7 @@ The plan includes property-based tests for universal correctness properties and 
     - **Validates: Requirements 9.4**
     - Test that successful login resets counter to zero
 
-  - [-] 4.16 Implement password reset logic
+  - [x] 4.16 Implement password reset logic
     - Create generatePasswordResetCode() to produce unique codes
     - Create sendPasswordResetEmail() using AWS SES
     - Create resetPassword() to validate code and update password hash
