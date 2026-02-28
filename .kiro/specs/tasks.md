@@ -563,7 +563,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Clear input field after creation
     - _Requirements: 14.1, 14.2, 14.3_
 
-  - [ ] 16.4 Implement drag-and-drop task reordering
+  - [x] 16.4 Implement drag-and-drop task reordering
     - Integrate react-beautiful-dnd or @dnd-kit library
     - Wrap TaskList with DragDropContext
     - Make TaskItem draggable
