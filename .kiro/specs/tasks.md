@@ -714,7 +714,7 @@ The plan includes property-based tests for universal correctness properties and 
     - **Validates: Requirements 5.4**
     - Test that certificates within 30 days of expiry trigger renewal
 
-- [-] 22. DynamoDB backup and recovery
+- [x] 22. DynamoDB backup and recovery
   - [x] 22.1 Enable DynamoDB point-in-time recovery
     - Enable PITR for Users, Tasks, Sessions, AuditLog tables
     - _Requirements: 13.12_
