@@ -368,7 +368,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Return success response
     - _Requirements: 3.2, 3.5, 3.6, 10.2_
 
-  - [ ] 10.7 Implement AuthHandler.handleResendVerification
+  - [x] 10.7 Implement AuthHandler.handleResendVerification
     - Parse and validate request body (email)
     - Generate new verification code
     - Send verification email
