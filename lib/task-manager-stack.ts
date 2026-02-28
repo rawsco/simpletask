@@ -512,6 +512,13 @@ export class TaskManagerStack extends cdk.Stack {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL, // CloudFront will access via OAI
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: true, // Clean up on stack deletion
+      intelligentTieringConfigurations: [
+        {
+          name: 'FrontendAssetsTiering',
+          archiveAccessTierTime: cdk.Duration.days(90),
+          deepArchiveAccessTierTime: cdk.Duration.days(180),
+        },
+      ],
     });
 
     // Create Origin Access Identity for CloudFront to access S3
