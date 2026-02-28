@@ -200,8 +200,8 @@ The plan includes property-based tests for universal correctness properties and 
   - Ensure all tests pass, ask the user if questions arise.
 
 
-- [ ] 6. Rate limiting service implementation
-  - [ ] 6.1 Implement RateLimitService
+- [-] 6. Rate limiting service implementation
+  - [x] 6.1 Implement RateLimitService
     - Create checkIPRateLimit() with 100 req/min limit (10 req/min for auth)
     - Create checkUserRateLimit() with 1000 req/hour limit
     - Create recordRequest() to increment counters in DynamoDB RateLimits table
