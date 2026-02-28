@@ -352,7 +352,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Return success response
     - _Requirements: 4.4, 10.5_
 
-  - [ ] 10.5 Implement AuthHandler.handlePasswordResetRequest
+  - [x] 10.5 Implement AuthHandler.handlePasswordResetRequest
     - Parse and validate request body (email)
     - Call AuthenticationService.generatePasswordResetCode()
     - Call AuthenticationService.sendPasswordResetEmail()
