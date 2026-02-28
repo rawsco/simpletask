@@ -555,7 +555,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Apply visual styling for completed tasks
     - _Requirements: 15.1, 15.2, 15.3, 15.4, 17.1, 17.2_
 
-  - [ ] 16.3 Create TaskCreateForm component
+  - [x] 16.3 Create TaskCreateForm component
     - Build input field for task description
     - Validate non-empty description on submit
     - Call API client create method
