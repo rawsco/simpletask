@@ -518,7 +518,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Redirect to task list on success
     - _Requirements: 4.1, 4.2, 9.2_
 
-  - [ ] 15.4 Create PasswordResetRequest component
+  - [x] 15.4 Create PasswordResetRequest component
     - Build form with email field
     - Call API client password reset request method
     - Display success message
