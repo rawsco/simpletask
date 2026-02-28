@@ -1,4 +1,5 @@
 import axios, { AxiosInstance, AxiosError } from 'axios'
+import { handleApiError } from '../lib/error-handler'
 import type {
   RegisterRequest,
   VerifyRequest,
@@ -57,7 +58,8 @@ class ApiClient {
           localStorage.removeItem('session')
           window.location.href = '/login'
         }
-        return Promise.reject(error)
+        // Convert Axios error to AppError
+        return Promise.reject(handleApiError(error))
       }
     )
   }
