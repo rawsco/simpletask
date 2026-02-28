@@ -1406,3 +1406,34 @@ describe('Multi-User Data Isolation', () => {
 - Monthly review of test effectiveness
 - Add new tests when bugs found in production
 - Refactor slow tests to improve CI/CD speed
+
+## Deployment
+
+### CI/CD Pipeline Integration
+
+The application is deployed through an external CI/CD pipeline managed at https://github.com/rawsco/cicdinfra. This pipeline handles:
+
+- Automated builds and deployments
+- Environment management (dev, staging, production)
+- Infrastructure provisioning via AWS CDK
+- Automated testing at each stage
+- Rollback capabilities
+
+**Pipeline Requirements**:
+- Application must provide APPLICATION-REQUIREMENTS.md documenting:
+  - Required environment variables and secrets
+  - AWS resource requirements
+  - Build and deployment steps
+  - Post-deployment verification steps
+
+**Deployment Stages**:
+1. **Pre-Deployment**: Run all tests, security scans, and generate coverage reports
+2. **Dev Deployment**: Deploy to dev environment, run integration tests
+3. **Staging Deployment**: Deploy to staging, run full test suite including performance tests
+4. **Production Deployment**: Deploy to production with smoke tests and monitoring
+
+**Infrastructure as Code**:
+- All AWS resources defined in CDK (lib/task-manager-stack.ts)
+- Infrastructure changes deployed through the pipeline
+- No manual resource creation in AWS console
+- All configuration managed through code and environment variables

@@ -16,38 +16,38 @@ The plan includes property-based tests for universal correctness properties and 
     - _Requirements: 23.1_
 
   - [x] 1.2 Define DynamoDB table schemas in CDK
-    - Create Users table with email partition key and UserIdIndex GSI
-    - Create Tasks table with userId partition key, taskId sort key, and OrderIndex LSI
-    - Create Sessions table with sessionToken partition key, UserSessionsIndex GSI, and TTL
-    - Create AuditLog table with eventId partition key, timestamp sort key, and GSIs
-    - Create RateLimits table with limitKey partition key and TTL
+    - Define Users table in CDK with email partition key and UserIdIndex GSI
+    - Define Tasks table in CDK with userId partition key, taskId sort key, and OrderIndex LSI
+    - Define Sessions table in CDK with sessionToken partition key, UserSessionsIndex GSI, and TTL
+    - Define AuditLog table in CDK with eventId partition key, timestamp sort key, and GSIs
+    - Define RateLimits table in CDK with limitKey partition key and TTL
     - Enable encryption at rest for all tables
     - Configure on-demand billing mode
     - _Requirements: 11.7, 13.7, 23.3_
 
   - [x] 1.3 Set up AWS Secrets Manager for credentials
-    - Create secret for database encryption keys
-    - Create secret for JWT signing key
-    - Configure automatic 90-day rotation
+    - Define Secrets Manager secret in CDK for database encryption keys
+    - Define Secrets Manager secret in CDK for JWT signing key
+    - Configure automatic 90-day rotation in CDK
     - _Requirements: 13.4, 13.5_
 
   - [x] 1.4 Configure API Gateway with throttling and CORS
-    - Create REST API with custom domain
-    - Configure throttling: 100 req/min per IP, 10 req/min for auth endpoints
-    - Set up CORS headers for frontend domain
-    - Configure request validation
+    - Define REST API in CDK with custom domain
+    - Configure throttling in CDK: 100 req/min per IP, 10 req/min for auth endpoints
+    - Set up CORS headers for frontend domain in CDK
+    - Configure request validation in CDK
     - _Requirements: 6.1, 6.6, 12.6, 13.8_
 
   - [x] 1.5 Set up CloudWatch logging and alarms
-    - Configure Lambda function log groups with 30-day retention
-    - Create alarms for failed authentication attempts
-    - Create alarms for unusual API call patterns
-    - Create cost budget alarm at 80% and 100% of $10 threshold
+    - Configure Lambda function log groups in CDK with 30-day retention
+    - Define CloudWatch alarms in CDK for failed authentication attempts
+    - Define CloudWatch alarms in CDK for unusual API call patterns
+    - Define cost budget alarm in CDK at 80% and 100% of $10 threshold
     - _Requirements: 13.9, 23.11, 23.12, 23.13, 23.15_
 
   - [x] 1.6 Configure CloudTrail for infrastructure audit logging
-    - Enable CloudTrail for all AWS API calls
-    - Create tamper-proof S3 bucket with versioning for audit logs
+    - Define CloudTrail configuration in CDK for all AWS API calls
+    - Define tamper-proof S3 bucket with versioning for audit logs in CDK
     - _Requirements: 13.2, 13.3_
 
 - [x] 2. Core data models and TypeScript interfaces
@@ -613,17 +613,17 @@ The plan includes property-based tests for universal correctness properties and 
 
 - [x] 19. Infrastructure deployment and optimization
   - [x] 19.1 Configure S3 bucket for frontend hosting
-    - Create S3 bucket with static website hosting
-    - Configure bucket policy for CloudFront access
-    - Enable S3 Intelligent-Tiering for cost optimization
+    - Define S3 bucket in CDK with static website hosting
+    - Configure bucket policy for CloudFront access in CDK
+    - Enable S3 Intelligent-Tiering for cost optimization in CDK
     - _Requirements: 23.16_
 
   - [x] 19.2 Configure CloudFront distribution
-    - Create CloudFront distribution with S3 origin
-    - Configure cache behaviors with 300-second TTL for static assets
-    - Enable compression for API responses
-    - Set up custom domain with SSL certificate
-    - Configure cache hit ratio monitoring (target 80%)
+    - Define CloudFront distribution in CDK with S3 origin
+    - Configure cache behaviors with 300-second TTL for static assets in CDK
+    - Enable compression for API responses in CDK
+    - Set up custom domain with SSL certificate in CDK
+    - Configure cache hit ratio monitoring (target 80%) in CDK
     - _Requirements: 23.4, 23.5, 23.8_
 
   - [x] 19.3 Optimize Lambda function configuration
@@ -633,11 +633,11 @@ The plan includes property-based tests for universal correctness properties and 
     - _Requirements: 23.9, 23.10_
 
   - [x] 19.4 Configure IAM roles with least privilege
-    - Create Lambda execution role with minimal permissions
-    - Grant DynamoDB access only to required tables
-    - Grant Secrets Manager access only to required secrets
-    - Grant SES send email permission
-    - Grant CloudWatch Logs write permission
+    - Define Lambda execution role in CDK with minimal permissions
+    - Grant DynamoDB access only to required tables in CDK
+    - Grant Secrets Manager access only to required secrets in CDK
+    - Grant SES send email permission in CDK
+    - Grant CloudWatch Logs write permission in CDK
     - _Requirements: 13.1, 13.11_
 
   - [ ]* 19.5 Write property test for IAM least privilege
@@ -646,10 +646,10 @@ The plan includes property-based tests for universal correctness properties and 
     - Test that Lambda roles have only required permissions
 
   - [x] 19.6 Configure DynamoDB indexes for efficient queries
-    - Create GSI on Users table for userId lookups
-    - Create LSI on Tasks table for order-based queries
-    - Create GSI on Sessions table for user session lookups
-    - Create GSIs on AuditLog table for userId and eventType queries
+    - Define GSI in CDK on Users table for userId lookups
+    - Define LSI in CDK on Tasks table for order-based queries
+    - Define GSI in CDK on Sessions table for user session lookups
+    - Define GSIs in CDK on AuditLog table for userId and eventType queries
     - Test query performance with sample data
     - _Requirements: 23.6_
 
@@ -665,16 +665,16 @@ The plan includes property-based tests for universal correctness properties and 
 
 - [x] 20. Monitoring and cost management
   - [x] 20.1 Set up CloudWatch dashboards
-    - Create dashboard for API metrics (latency, error rate, request count)
-    - Create dashboard for Lambda metrics (invocations, duration, errors)
-    - Create dashboard for DynamoDB metrics (read/write capacity, throttles)
-    - Create dashboard for cost metrics
+    - Define CloudWatch dashboard in CDK for API metrics (latency, error rate, request count)
+    - Define CloudWatch dashboard in CDK for Lambda metrics (invocations, duration, errors)
+    - Define CloudWatch dashboard in CDK for DynamoDB metrics (read/write capacity, throttles)
+    - Define CloudWatch dashboard in CDK for cost metrics
 
   - [x] 20.2 Configure cost budget and alerts
-    - Create AWS Budget with $10 monthly threshold
-    - Configure alert at 80% threshold
-    - Configure critical alert at 100% threshold
-    - Set up SNS topic for alert notifications
+    - Define AWS Budget in CDK with $10 monthly threshold
+    - Configure alert at 80% threshold in CDK
+    - Configure critical alert at 100% threshold in CDK
+    - Define SNS topic for alert notifications in CDK
     - _Requirements: 23.11, 23.12, 23.13_
 
   - [ ]* 20.3 Write property test for cost budget alerts
@@ -683,13 +683,13 @@ The plan includes property-based tests for universal correctness properties and 
     - Test that alerts are sent at 80% and 100% thresholds
 
   - [x] 20.4 Enable AWS Cost Explorer and resource tagging
-    - Enable Cost Explorer
-    - Tag all resources with cost allocation tags (Environment, Service, Owner)
+    - Enable Cost Explorer (one-time manual setup in AWS console or via pipeline)
+    - Define cost allocation tags in CDK for all resources (Environment, Service, Owner)
     - _Requirements: 23.14_
 
   - [x] 20.5 Implement automated resource cleanup
-    - Create Lambda function to delete CloudWatch logs older than 30 days
-    - Schedule function to run daily
+    - Implement Lambda function code to delete CloudWatch logs older than 30 days
+    - Define Lambda function and EventBridge schedule in CDK to run daily
     - _Requirements: 23.15_
 
   - [ ]* 20.6 Write property test for resource cleanup
@@ -699,14 +699,14 @@ The plan includes property-based tests for universal correctness properties and 
 
 - [x] 21. SSL certificate management
   - [x] 21.1 Set up SSL certificate with ACM
-    - Request certificate from AWS Certificate Manager
-    - Configure DNS validation
-    - Associate certificate with CloudFront distribution
+    - Define ACM certificate in CDK with DNS validation
+    - Configure DNS validation records in CDK
+    - Associate certificate with CloudFront distribution in CDK
     - _Requirements: 5.1, 5.3_
 
   - [x] 21.2 Configure automatic certificate renewal
-    - Enable ACM automatic renewal
-    - Set up CloudWatch alarm for certificates expiring within 30 days
+    - ACM automatic renewal is enabled by default
+    - Define CloudWatch alarm in CDK for certificates expiring within 30 days
     - _Requirements: 5.4_
 
   - [ ]* 21.3 Write property test for SSL certificate auto-renewal
@@ -716,23 +716,26 @@ The plan includes property-based tests for universal correctness properties and 
 
 - [x] 22. DynamoDB backup and recovery
   - [x] 22.1 Enable DynamoDB point-in-time recovery
-    - Enable PITR for Users, Tasks, Sessions, AuditLog tables
+    - Define PITR configuration in CDK for Users, Tasks, Sessions, AuditLog tables
     - _Requirements: 13.12_
 
   - [x] 22.2 Configure automated daily backups
-    - Create Lambda function to trigger DynamoDB backups
-    - Schedule daily backup execution
-    - Configure 30-day backup retention
+    - Implement Lambda function code to trigger DynamoDB backups
+    - Define Lambda function and EventBridge schedule in CDK for daily execution
+    - Configure 30-day backup retention in CDK
     - _Requirements: 13.10_
 
-- [~] 23. Final integration and testing
-  - [ ] 23.1 Deploy complete stack to test environment
-    - Deploy CDK stack to AWS test account
-    - Verify all resources created successfully
-    - Verify CloudTrail logging enabled
-    - Verify encryption at rest enabled for all services
+- [-] 23. CI/CD integration and testing
+  - [x] 23.1 Create CI/CD pipeline integration configuration
+    - Create APPLICATION-REQUIREMENTS.md with pipeline requirements
+    - Document required environment variables and secrets for pipeline
+    - Document AWS resource requirements for pipeline deployment
+    - Specify build and deployment steps for CI/CD integration
+    - Reference https://github.com/rawsco/cicdinfra for pipeline setup
+    - _Requirements: 23.1_
 
-  - [ ] 23.2 Run end-to-end integration tests
+  - [ ] 23.2 Create end-to-end integration test suite
+    - Create tests/integration/e2e-tests.ts with test suite
     - Test complete user registration and verification flow
     - Test login and session management
     - Test password reset flow
@@ -741,43 +744,56 @@ The plan includes property-based tests for universal correctness properties and 
     - Test multi-user data isolation
     - Test rate limiting enforcement
     - Test account lockout and unlock
+    - Configure tests to run in CI/CD pipeline
+    - _Requirements: 16.1, 18.3, 18.4, 18.5_
 
-  - [ ]* 23.3 Run property-based test suite
-    - Execute all property tests with 100 iterations minimum
-    - Verify all properties pass
-    - Document any failures and fix root causes
+  - [ ]* 23.3 Create property-based test suite runner
+    - Create script to execute all property tests with 100 iterations minimum
+    - Configure test runner for CI/CD pipeline integration
+    - Document property test execution and failure analysis
+    - _Requirements: Design document correctness properties_
 
-  - [ ]* 23.4 Run security testing
-    - Run OWASP ZAP vulnerability scan
-    - Run AWS IAM Access Analyzer
-    - Test authentication bypass attempts
-    - Test authorization boundary violations
-    - Test XSS and injection attempts
+  - [ ]* 23.4 Create security testing suite
+    - Create scripts/security-tests.sh for automated security testing
+    - Configure OWASP ZAP vulnerability scan
+    - Configure AWS IAM Access Analyzer checks
+    - Create tests for authentication bypass attempts
+    - Create tests for authorization boundary violations
+    - Create tests for XSS and injection attempts
     - Verify audit logs capture security events
+    - _Requirements: 13.1, 13.2, 13.3, 13.9_
 
-  - [ ]* 23.5 Run performance testing
+  - [ ]* 23.5 Create performance testing suite
+    - Create tests/performance/load-tests.ts for performance testing
     - Test API response times (target p95 < 200ms)
     - Test task list load time with 1000 tasks (target < 500ms)
     - Test scrolling performance with 10,000 tasks
     - Test Lambda cold start times (target < 1s)
     - Test concurrent user load
+    - Configure performance tests for CI/CD pipeline
+    - _Requirements: 20.3, 20.4, 20.5_
 
-  - [ ] 23.6 Verify cost optimization measures
+  - [ ] 23.6 Create cost optimization verification script
+    - Create scripts/verify-cost-optimization.sh
     - Verify DynamoDB on-demand billing enabled
     - Verify CloudFront cache hit ratio > 80%
     - Verify Lambda memory and timeout optimized
     - Verify S3 Intelligent-Tiering enabled
     - Verify CloudWatch log retention set to 30 days
-    - Review AWS Cost Explorer for unexpected charges
+    - Query AWS Cost Explorer for unexpected charges
+    - Configure script to run in CI/CD pipeline post-deployment
+    - _Requirements: 23.4, 23.5, 23.8, 23.9, 23.10, 23.15, 23.16_
 
-  - [ ] 23.7 Create deployment documentation
-    - Document deployment process
-    - Document environment variables and secrets
+  - [ ] 23.7 Create deployment and operations documentation
+    - Create DEPLOYMENT_GUIDE.md with CI/CD pipeline integration steps
+    - Document environment variables and secrets configuration
     - Document monitoring and alerting setup
-    - Document backup and recovery procedures
+    - Create docs/BACKUP_AND_RECOVERY.md with backup procedures
     - Document cost optimization strategies
+    - Document post-deployment verification steps
+    - _Requirements: 13.10, 13.12, 23.11, 23.12, 23.13_
 
-- [~] 24. Final checkpoint - Production readiness
+- [ ] 24. Final checkpoint - Production readiness
   - Ensure all tests pass, ask the user if questions arise.
 
 
@@ -791,6 +807,7 @@ The plan includes property-based tests for universal correctness properties and 
 - Checkpoints ensure incremental validation at key milestones
 - The implementation uses TypeScript for both backend (Lambda) and frontend (React)
 - All infrastructure is defined as code using AWS CDK
+- Deployment is handled through the CI/CD pipeline at https://github.com/rawsco/cicdinfra
 - Security is implemented at multiple layers: encryption, authentication, authorization, rate limiting, audit logging
 - Cost optimization is achieved through serverless architecture, on-demand pricing, caching, and resource cleanup
 - The application is designed for scalability with pagination, infinite scroll, and efficient database queries
