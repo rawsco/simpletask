@@ -83,8 +83,8 @@ The plan includes property-based tests for universal correctness properties and 
     - Test error handling for invalid ciphertext
     - Test key caching behavior
 
-- [ ] 4. Authentication service implementation
-  - [ ] 4.1 Implement password validation and hashing
+- [-] 4. Authentication service implementation
+  - [x] 4.1 Implement password validation and hashing
     - Create validatePassword() with complexity rules (12 chars, uppercase, lowercase, digit, special)
     - Create validateEmail() with regex validation
     - Create hashPassword() using bcrypt with salt rounds
