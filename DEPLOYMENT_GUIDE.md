@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide provides step-by-step instructions for deploying the Task Manager Application to AWS. The application uses AWS CDK to provision a serverless infrastructure including Lambda functions, API Gateway, DynamoDB tables, CloudFront distribution, and comprehensive security controls.
+This guide provides step-by-step instructions for deploying the Task Manager Application to AWS. The application uses AWS SAM (Serverless Application Model) to provision a serverless infrastructure including Lambda functions, API Gateway, DynamoDB tables, CloudFront distribution, and comprehensive security controls.
 
 **Recommended Deployment Method**: The application is designed to be deployed through the external CI/CD pipeline at https://github.com/rawsco/cicdinfra. This guide covers both CI/CD pipeline deployment and manual deployment for development/testing purposes.
 
@@ -39,7 +39,7 @@ For production deployments using the CI/CD pipeline:
 The CI/CD pipeline handles all deployment steps automatically, including:
 - Building TypeScript code
 - Running unit and integration tests
-- Synthesizing CDK templates
+- Building and packaging SAM application
 - Deploying to AWS
 - Uploading frontend to S3/CloudFront
 - Invalidating CloudFront cache
@@ -62,10 +62,10 @@ The CI/CD pipeline handles all deployment steps automatically, including:
    aws --version  # Should be 2.x or later
    ```
 
-3. **AWS CDK CLI**
+3. **AWS SAM CLI**
    ```bash
-   npm install -g aws-cdk
-   cdk --version  # Should be 2.100.0 or later
+   pip install aws-sam-cli
+   sam --version  # Should be 1.100.0 or later
    ```
 
 ### AWS Account Setup
@@ -102,9 +102,9 @@ The CI/CD pipeline handles all deployment steps automatically, including:
    
    **Important**: In production, move SES out of sandbox mode to send emails to any recipient.
 
-4. **CDK Bootstrap**: Bootstrap your AWS account for CDK (one-time setup per account/region)
+4. **S3 Bucket for SAM Artifacts**: Create an S3 bucket for SAM deployment artifacts (one-time setup per account/region)
    ```bash
-   cdk bootstrap aws://ACCOUNT-ID/REGION
+   aws s3 mb s3://taskmanager-sam-artifacts-ACCOUNT-ID-REGION
    ```
 
 ## Deployment Steps
@@ -149,47 +149,47 @@ SES_SENDER_EMAIL=noreply@yourdomain.com
 NODE_ENV=production
 ```
 
-### Step 4: Review CDK Stack Configuration
+### Step 4: Review SAM Template Configuration
 
-Before deploying, review the stack configuration in `lib/task-manager-stack.ts`:
+Before deploying, review the SAM template in `app-template.yaml`:
 
 1. **Cost Allocation Tags**: Verify tags match your organization's requirements
 2. **Budget Threshold**: Default is $10/month - adjust if needed
 3. **CORS Configuration**: Update `allowOrigins` in API Gateway to your frontend domain
 4. **CloudFront Domain**: Optionally configure custom domain with SSL certificate
 
-### Step 5: Synthesize CloudFormation Template
+### Step 5: Validate SAM Template
 
-Generate the CloudFormation template to review what will be created:
+Validate the SAM template to ensure it's correct:
 
 ```bash
-npm run synth
+sam validate --template-file app-template.yaml
 ```
-
-Review the generated template in `cdk.out/TaskManagerStack.template.json`.
 
 ### Step 6: Deploy the Stack
 
 Deploy the complete infrastructure stack:
 
 ```bash
-npm run deploy
+npm run sam:build
+npm run sam:deploy
 ```
 
-Or with CDK CLI directly:
+Or with SAM CLI directly:
 
 ```bash
-cdk deploy --require-approval never
+sam build --template-file app-template.yaml
+sam deploy --guided
 ```
 
 **Deployment Time**: Approximately 10-15 minutes
 
 The deployment will create:
 - 5 DynamoDB tables (Users, Tasks, Sessions, AuditLog, RateLimits)
-- 2 Lambda functions (Auth, Task)
+- 4 Lambda functions (Auth, Task, Backup, LogCleanup)
 - 1 API Gateway REST API
 - 1 CloudFront distribution
-- 2 S3 buckets (frontend hosting, CloudTrail logs)
+- 3 S3 buckets (frontend hosting, CloudTrail logs, CloudFront logs)
 - 2 Secrets Manager secrets (encryption keys, JWT signing key)
 - CloudWatch log groups, alarms, and dashboard
 - CloudTrail trail for audit logging
@@ -199,15 +199,15 @@ The deployment will create:
 
 ### Step 7: Note Stack Outputs
 
-After deployment completes, CDK will output important values:
+After deployment completes, SAM will output important values:
 
 ```
 Outputs:
-TaskManagerStack.APIEndpoint = https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/prod/
-TaskManagerStack.CloudFrontDomainName = xxxxxxxxxx.cloudfront.net
-TaskManagerStack.FrontendBucketName = taskmanager-frontend-xxxx-us-east-1
-TaskManagerStack.AlarmTopicArn = arn:aws:sns:us-east-1:xxxx:TaskManager-Alarms
-TaskManagerStack.DashboardURL = https://console.aws.amazon.com/cloudwatch/...
+ApiEndpoint = https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/staging/
+CloudFrontDomainName = xxxxxxxxxx.cloudfront.net
+FrontendBucketName = taskmanager-frontend-xxxx-staging
+AlarmTopicArn = arn:aws:sns:us-east-1:xxxx:TaskManager-Alarms-staging
+DashboardURL = https://console.aws.amazon.com/cloudwatch/...
 ```
 
 **Save these outputs** - you'll need them for configuration and monitoring.
@@ -587,15 +587,15 @@ aws dynamodb query \
 
 ### Deployment Fails
 
-**Issue**: CDK deployment fails with permission errors
+**Issue**: SAM deployment fails with permission errors
 
 **Solution**:
 ```bash
 # Verify AWS credentials
 aws sts get-caller-identity
 
-# Verify CDK bootstrap
-cdk bootstrap
+# Verify S3 bucket for artifacts exists
+aws s3 ls s3://taskmanager-sam-artifacts-ACCOUNT-ID-REGION
 
 # Check CloudFormation events
 aws cloudformation describe-stack-events --stack-name TaskManagerStack
@@ -669,7 +669,7 @@ If deployment fails or issues arise:
 
 ```bash
 # Delete the stack
-cdk destroy
+sam delete --stack-name taskmanager-dev
 
 # Or rollback to previous version
 aws cloudformation cancel-update-stack --stack-name TaskManagerStack
@@ -778,7 +778,7 @@ Based on moderate usage (1000 users, 10,000 tasks):
 
 ### AWS Documentation
 
-- [AWS CDK Documentation](https://docs.aws.amazon.com/cdk/)
+- [AWS SAM Documentation](https://docs.aws.amazon.com/serverless-application-model/)
 - [Lambda Developer Guide](https://docs.aws.amazon.com/lambda/)
 - [API Gateway Developer Guide](https://docs.aws.amazon.com/apigateway/)
 - [DynamoDB Developer Guide](https://docs.aws.amazon.com/dynamodb/)

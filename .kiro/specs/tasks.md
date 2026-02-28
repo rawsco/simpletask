@@ -9,45 +9,46 @@ The plan includes property-based tests for universal correctness properties and 
 ## Tasks
 
 - [x] 1. Project setup and infrastructure foundation
-  - [x] 1.1 Initialize TypeScript project with AWS CDK
-    - Create package.json with dependencies (aws-cdk-lib, typescript, jest, fast-check)
+  - [x] 1.1 Initialize TypeScript project with AWS SAM
+    - Create package.json with dependencies (typescript, jest, fast-check)
     - Configure tsconfig.json for Node.js Lambda runtime
-    - Set up project structure: /lib (CDK), /lambda (handlers), /frontend (React)
+    - Set up project structure: /lambda (handlers), /frontend (React)
+    - Create app-template.yaml (SAM template)
     - _Requirements: 23.1_
 
-  - [x] 1.2 Define DynamoDB table schemas in CDK
-    - Define Users table in CDK with email partition key and UserIdIndex GSI
-    - Define Tasks table in CDK with userId partition key, taskId sort key, and OrderIndex LSI
-    - Define Sessions table in CDK with sessionToken partition key, UserSessionsIndex GSI, and TTL
-    - Define AuditLog table in CDK with eventId partition key, timestamp sort key, and GSIs
-    - Define RateLimits table in CDK with limitKey partition key and TTL
+  - [x] 1.2 Define DynamoDB table schemas in SAM
+    - Define Users table in SAM with email partition key and UserIdIndex GSI
+    - Define Tasks table in SAM with userId partition key, taskId sort key, and OrderIndex LSI
+    - Define Sessions table in SAM with sessionToken partition key, UserSessionsIndex GSI, and TTL
+    - Define AuditLog table in SAM with eventId partition key, timestamp sort key, and GSIs
+    - Define RateLimits table in SAM with limitKey partition key and TTL
     - Enable encryption at rest for all tables
     - Configure on-demand billing mode
     - _Requirements: 11.7, 13.7, 23.3_
 
   - [x] 1.3 Set up AWS Secrets Manager for credentials
-    - Define Secrets Manager secret in CDK for database encryption keys
-    - Define Secrets Manager secret in CDK for JWT signing key
-    - Configure automatic 90-day rotation in CDK
+    - Define Secrets Manager secret in SAM for database encryption keys
+    - Define Secrets Manager secret in SAM for JWT signing key
+    - Configure automatic 90-day rotation in SAM
     - _Requirements: 13.4, 13.5_
 
   - [x] 1.4 Configure API Gateway with throttling and CORS
-    - Define REST API in CDK with custom domain
-    - Configure throttling in CDK: 100 req/min per IP, 10 req/min for auth endpoints
-    - Set up CORS headers for frontend domain in CDK
-    - Configure request validation in CDK
+    - Define REST API in SAM with custom domain
+    - Configure throttling in SAM: 100 req/min per IP, 10 req/min for auth endpoints
+    - Set up CORS headers for frontend domain in SAM
+    - Configure request validation in SAM
     - _Requirements: 6.1, 6.6, 12.6, 13.8_
 
   - [x] 1.5 Set up CloudWatch logging and alarms
-    - Configure Lambda function log groups in CDK with 30-day retention
-    - Define CloudWatch alarms in CDK for failed authentication attempts
-    - Define CloudWatch alarms in CDK for unusual API call patterns
-    - Define cost budget alarm in CDK at 80% and 100% of $10 threshold
+    - Configure Lambda function log groups in SAM with 30-day retention
+    - Define CloudWatch alarms in SAM for failed authentication attempts
+    - Define CloudWatch alarms in SAM for unusual API call patterns
+    - Define cost budget alarm in SAM at 80% and 100% of $10 threshold
     - _Requirements: 13.9, 23.11, 23.12, 23.13, 23.15_
 
   - [x] 1.6 Configure CloudTrail for infrastructure audit logging
-    - Define CloudTrail configuration in CDK for all AWS API calls
-    - Define tamper-proof S3 bucket with versioning for audit logs in CDK
+    - Define CloudTrail configuration in SAM for all AWS API calls
+    - Define tamper-proof S3 bucket with versioning for audit logs in SAM
     - _Requirements: 13.2, 13.3_
 
 - [x] 2. Core data models and TypeScript interfaces
@@ -613,17 +614,17 @@ The plan includes property-based tests for universal correctness properties and 
 
 - [x] 19. Infrastructure deployment and optimization
   - [x] 19.1 Configure S3 bucket for frontend hosting
-    - Define S3 bucket in CDK with static website hosting
-    - Configure bucket policy for CloudFront access in CDK
-    - Enable S3 Intelligent-Tiering for cost optimization in CDK
+    - Define S3 bucket in SAM with static website hosting
+    - Configure bucket policy for CloudFront access in SAM
+    - Enable S3 Intelligent-Tiering for cost optimization in SAM
     - _Requirements: 23.16_
 
   - [x] 19.2 Configure CloudFront distribution
-    - Define CloudFront distribution in CDK with S3 origin
-    - Configure cache behaviors with 300-second TTL for static assets in CDK
-    - Enable compression for API responses in CDK
-    - Set up custom domain with SSL certificate in CDK
-    - Configure cache hit ratio monitoring (target 80%) in CDK
+    - Define CloudFront distribution in SAM with S3 origin
+    - Configure cache behaviors with 300-second TTL for static assets in SAM
+    - Enable compression for API responses in SAM
+    - Set up custom domain with SSL certificate in SAM
+    - Configure cache hit ratio monitoring (target 80%) in SAM
     - _Requirements: 23.4, 23.5, 23.8_
 
   - [x] 19.3 Optimize Lambda function configuration
@@ -633,11 +634,11 @@ The plan includes property-based tests for universal correctness properties and 
     - _Requirements: 23.9, 23.10_
 
   - [x] 19.4 Configure IAM roles with least privilege
-    - Define Lambda execution role in CDK with minimal permissions
-    - Grant DynamoDB access only to required tables in CDK
-    - Grant Secrets Manager access only to required secrets in CDK
-    - Grant SES send email permission in CDK
-    - Grant CloudWatch Logs write permission in CDK
+    - Define Lambda execution role in SAM with minimal permissions
+    - Grant DynamoDB access only to required tables in SAM
+    - Grant Secrets Manager access only to required secrets in SAM
+    - Grant SES send email permission in SAM
+    - Grant CloudWatch Logs write permission in SAM
     - _Requirements: 13.1, 13.11_
 
   - [ ]* 19.5 Write property test for IAM least privilege
@@ -646,10 +647,10 @@ The plan includes property-based tests for universal correctness properties and 
     - Test that Lambda roles have only required permissions
 
   - [x] 19.6 Configure DynamoDB indexes for efficient queries
-    - Define GSI in CDK on Users table for userId lookups
-    - Define LSI in CDK on Tasks table for order-based queries
-    - Define GSI in CDK on Sessions table for user session lookups
-    - Define GSIs in CDK on AuditLog table for userId and eventType queries
+    - Define GSI in SAM on Users table for userId lookups
+    - Define LSI in SAM on Tasks table for order-based queries
+    - Define GSI in SAM on Sessions table for user session lookups
+    - Define GSIs in SAM on AuditLog table for userId and eventType queries
     - Test query performance with sample data
     - _Requirements: 23.6_
 
@@ -665,16 +666,16 @@ The plan includes property-based tests for universal correctness properties and 
 
 - [x] 20. Monitoring and cost management
   - [x] 20.1 Set up CloudWatch dashboards
-    - Define CloudWatch dashboard in CDK for API metrics (latency, error rate, request count)
-    - Define CloudWatch dashboard in CDK for Lambda metrics (invocations, duration, errors)
-    - Define CloudWatch dashboard in CDK for DynamoDB metrics (read/write capacity, throttles)
-    - Define CloudWatch dashboard in CDK for cost metrics
+    - Define CloudWatch dashboard in SAM for API metrics (latency, error rate, request count)
+    - Define CloudWatch dashboard in SAM for Lambda metrics (invocations, duration, errors)
+    - Define CloudWatch dashboard in SAM for DynamoDB metrics (read/write capacity, throttles)
+    - Define CloudWatch dashboard in SAM for cost metrics
 
   - [x] 20.2 Configure cost budget and alerts
-    - Define AWS Budget in CDK with $10 monthly threshold
-    - Configure alert at 80% threshold in CDK
-    - Configure critical alert at 100% threshold in CDK
-    - Define SNS topic for alert notifications in CDK
+    - Define AWS Budget in SAM with $10 monthly threshold
+    - Configure alert at 80% threshold in SAM
+    - Configure critical alert at 100% threshold in SAM
+    - Define SNS topic for alert notifications in SAM
     - _Requirements: 23.11, 23.12, 23.13_
 
   - [ ]* 20.3 Write property test for cost budget alerts
@@ -684,12 +685,12 @@ The plan includes property-based tests for universal correctness properties and 
 
   - [x] 20.4 Enable AWS Cost Explorer and resource tagging
     - Enable Cost Explorer (one-time manual setup in AWS console or via pipeline)
-    - Define cost allocation tags in CDK for all resources (Environment, Service, Owner)
+    - Define cost allocation tags in SAM for all resources (Environment, Service, Owner)
     - _Requirements: 23.14_
 
   - [x] 20.5 Implement automated resource cleanup
     - Implement Lambda function code to delete CloudWatch logs older than 30 days
-    - Define Lambda function and EventBridge schedule in CDK to run daily
+    - Define Lambda function and EventBridge schedule in SAM to run daily
     - _Requirements: 23.15_
 
   - [ ]* 20.6 Write property test for resource cleanup
@@ -699,14 +700,14 @@ The plan includes property-based tests for universal correctness properties and 
 
 - [x] 21. SSL certificate management
   - [x] 21.1 Set up SSL certificate with ACM
-    - Define ACM certificate in CDK with DNS validation
-    - Configure DNS validation records in CDK
-    - Associate certificate with CloudFront distribution in CDK
+    - Define ACM certificate in SAM with DNS validation
+    - Configure DNS validation records in SAM
+    - Associate certificate with CloudFront distribution in SAM
     - _Requirements: 5.1, 5.3_
 
   - [x] 21.2 Configure automatic certificate renewal
     - ACM automatic renewal is enabled by default
-    - Define CloudWatch alarm in CDK for certificates expiring within 30 days
+    - Define CloudWatch alarm in SAM for certificates expiring within 30 days
     - _Requirements: 5.4_
 
   - [ ]* 21.3 Write property test for SSL certificate auto-renewal
@@ -716,13 +717,13 @@ The plan includes property-based tests for universal correctness properties and 
 
 - [x] 22. DynamoDB backup and recovery
   - [x] 22.1 Enable DynamoDB point-in-time recovery
-    - Define PITR configuration in CDK for Users, Tasks, Sessions, AuditLog tables
+    - Define PITR configuration in SAM for Users, Tasks, Sessions, AuditLog tables
     - _Requirements: 13.12_
 
   - [x] 22.2 Configure automated daily backups
     - Implement Lambda function code to trigger DynamoDB backups
-    - Define Lambda function and EventBridge schedule in CDK for daily execution
-    - Configure 30-day backup retention in CDK
+    - Define Lambda function and EventBridge schedule in SAM for daily execution
+    - Configure 30-day backup retention in SAM
     - _Requirements: 13.10_
 
 - [x] 23. CI/CD integration and testing
@@ -806,7 +807,7 @@ The plan includes property-based tests for universal correctness properties and 
 - Integration tests validate end-to-end workflows
 - Checkpoints ensure incremental validation at key milestones
 - The implementation uses TypeScript for both backend (Lambda) and frontend (React)
-- All infrastructure is defined as code using AWS CDK
+- All infrastructure is defined as code using AWS SAM (Serverless Application Model)
 - Deployment is handled through the CI/CD pipeline at https://github.com/rawsco/cicdinfra
 - Security is implemented at multiple layers: encryption, authentication, authorization, rate limiting, audit logging
 - Cost optimization is achieved through serverless architecture, on-demand pricing, caching, and resource cleanup

@@ -1125,7 +1125,7 @@ The testing strategy employs a dual approach combining unit tests for specific s
 **Framework**: 
 - Backend (Lambda functions): Jest with AWS SDK mocks
 - Frontend: Jest with React Testing Library
-- Infrastructure: AWS CDK assertions
+- Infrastructure: SAM template validation
 
 **Test Categories**:
 
@@ -1415,7 +1415,7 @@ The application is deployed through an external CI/CD pipeline managed at https:
 
 - Automated builds and deployments
 - Environment management (dev, staging, production)
-- Infrastructure provisioning via AWS CDK
+- Infrastructure provisioning via AWS SAM/CloudFormation
 - Automated testing at each stage
 - Rollback capabilities
 
@@ -1433,7 +1433,7 @@ The application is deployed through an external CI/CD pipeline managed at https:
 4. **Production Deployment**: Deploy to production with smoke tests and monitoring
 
 **Infrastructure as Code**:
-- All AWS resources defined in CDK (lib/task-manager-stack.ts)
+- All AWS resources defined in SAM template (app-template.yaml)
 - Infrastructure changes deployed through the pipeline
 - No manual resource creation in AWS console
 - All configuration managed through code and environment variables

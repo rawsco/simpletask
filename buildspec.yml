@@ -1,0 +1,86 @@
+version: 0.2
+
+# Task Manager Application Build Specification for SAM
+# This buildspec is used by AWS CodeBuild in the CI/CD pipeline
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 18
+    commands:
+      - echo "Installing dependencies..."
+      - echo "Node version:" && node --version
+      - echo "NPM version:" && npm --version
+      
+      # Install AWS SAM CLI
+      - pip3 install aws-sam-cli
+      - echo "SAM version:" && sam --version
+      
+      # Install backend dependencies
+      - echo "Installing backend dependencies..."
+      - npm ci
+      
+      # Install frontend dependencies
+      - echo "Installing frontend dependencies..."
+      - cd frontend
+      - npm ci
+      - cd ..
+
+  pre_build:
+    commands:
+      - echo "Running tests..."
+      - echo "Build started on $(date)"
+      
+      # Run backend tests
+      - echo "Running backend tests..."
+      - npm test
+      
+      # Run frontend tests
+      - echo "Running frontend tests..."
+      - cd frontend
+      - npm test -- --run
+      - cd ..
+      
+      # Build TypeScript
+      - echo "Building TypeScript..."
+      - npm run build
+      
+      - echo "All tests passed!"
+
+  build:
+    commands:
+      - echo "Building application..."
+      
+      # Build frontend
+      - echo "Building frontend..."
+      - cd frontend
+      - npm run build
+      - cd ..
+      
+      # Build SAM application
+      - echo "Building SAM application..."
+      - sam build --template-file app-template.yaml
+      
+      # Package SAM application
+      - echo "Packaging SAM application..."
+      - sam package --template-file .aws-sam/build/template.yaml --output-template-file packaged-template.yaml --s3-bucket $ARTIFACT_BUCKET
+      
+      - echo "Build completed successfully!"
+
+  post_build:
+    commands:
+      - echo "Post-build phase..."
+      - echo "Build completed on $(date)"
+      - echo "SAM application packaged and ready for deployment!"
+
+artifacts:
+  files:
+    - packaged-template.yaml
+    - frontend/dist/**/*
+  name: BuildArtifact
+
+cache:
+  paths:
+    - 'node_modules/**/*'
+    - 'frontend/node_modules/**/*'
+    - '.npm/**/*'

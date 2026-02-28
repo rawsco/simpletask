@@ -1,6 +1,6 @@
 # Task Manager Application
 
-A serverless task manager application built with AWS CDK, featuring comprehensive security controls and cost optimization.
+A serverless task manager application built with AWS SAM (Serverless Application Model), featuring comprehensive security controls and cost optimization.
 
 ## Architecture
 
@@ -14,21 +14,22 @@ A serverless task manager application built with AWS CDK, featuring comprehensiv
 
 ```
 .
-├── bin/                    # CDK app entry point
-├── lib/                    # CDK infrastructure definitions
 ├── lambda/                 # Lambda function handlers
 ├── frontend/               # React frontend application
+├── tests/                  # Test files
+├── scripts/                # Utility scripts
+├── app-template.yaml       # SAM template (infrastructure as code)
+├── buildspec.yml           # CI/CD build specification
 ├── package.json            # Dependencies
 ├── tsconfig.json           # TypeScript configuration
-├── jest.config.js          # Jest test configuration
-└── cdk.json                # CDK configuration
+└── jest.config.js          # Jest test configuration
 ```
 
 ## Prerequisites
 
 - Node.js 18.x or later
 - AWS CLI configured with appropriate credentials
-- AWS CDK CLI (`npm install -g aws-cdk`)
+- AWS SAM CLI (`pip install aws-sam-cli`)
 
 ## Installation
 
@@ -54,13 +55,20 @@ npm run test:watch
 
 ## Deployment
 
+### Local Testing
 ```bash
-# Synthesize CloudFormation template
-npm run synth
+# Validate SAM template
+npm run sam:validate
 
-# Deploy to AWS
-npm run deploy
+# Build SAM application
+npm run sam:build
+
+# Deploy to AWS (guided)
+npm run sam:deploy
 ```
+
+### CI/CD Pipeline
+The application is designed to be deployed through the CI/CD pipeline at https://github.com/rawsco/cicdinfra. Push to the configured branch to trigger automatic deployment.
 
 ## Testing
 
