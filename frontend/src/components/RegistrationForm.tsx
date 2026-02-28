@@ -117,10 +117,10 @@ export default function RegistrationForm({ onSuccess }: RegistrationFormProps) {
           value={captchaToken}
           onChange={(e) => setCaptchaToken(e.target.value)}
           required
-          placeholder="Enter CAPTCHA response"
+          placeholder="Enter any text (CAPTCHA integration pending)"
         />
         <div style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
-          Note: CAPTCHA integration pending
+          Note: For testing, enter any text. Production will use Google reCAPTCHA.
         </div>
       </div>
       {error && <div className="error-message">{error}</div>}
