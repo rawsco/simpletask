@@ -502,7 +502,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Redirect to verification page on success
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 8.1, 8.2, 8.3, 8.4, 8.5_
 
-  - [ ] 15.2 Create EmailVerificationForm component
+  - [x] 15.2 Create EmailVerificationForm component
     - Build form with verification code input
     - Call API client verify method on submit
     - Store session token on successful verification
