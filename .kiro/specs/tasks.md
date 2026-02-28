@@ -682,7 +682,7 @@ The plan includes property-based tests for universal correctness properties and 
     - **Validates: Requirements 23.11, 23.12, 23.13**
     - Test that alerts are sent at 80% and 100% thresholds
 
-  - [ ] 20.4 Enable AWS Cost Explorer and resource tagging
+  - [x] 20.4 Enable AWS Cost Explorer and resource tagging
     - Enable Cost Explorer
     - Tag all resources with cost allocation tags (Environment, Service, Owner)
     - _Requirements: 23.14_
