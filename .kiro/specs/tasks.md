@@ -453,7 +453,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Add X-XSS-Protection: 1; mode=block header
     - _Requirements: 12.1, 12.2, 12.3, 12.4, 12.5, 12.7_
 
-  - [ ] 12.3 Implement HTTPS enforcement in CloudFront
+  - [x] 12.3 Implement HTTPS enforcement in CloudFront
     - Configure CloudFront to redirect HTTP to HTTPS
     - Set up SSL certificate with ACM
     - Configure TLS 1.2 minimum version

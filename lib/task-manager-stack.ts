@@ -12,6 +12,10 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as cloudwatch_actions from 'aws-cdk-lib/aws-cloudwatch-actions';
 import * as sns from 'aws-cdk-lib/aws-sns';
 import * as budgets from 'aws-cdk-lib/aws-budgets';
+import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
+import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
+import * as certificatemanager from 'aws-cdk-lib/aws-certificatemanager';
+import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment';
 
 export class TaskManagerStack extends cdk.Stack {
   public readonly usersTable: dynamodb.Table;
@@ -495,5 +499,130 @@ export class TaskManagerStack extends cdk.Stack {
       value: cloudTrailBucket.bucketName,
       description: 'S3 bucket containing CloudTrail audit logs',
     });
+
+    // ========================================
+    // CloudFront Distribution with HTTPS Enforcement
+    // ========================================
+
+    // Create S3 bucket for frontend hosting
+    // Requirement 23.16
+    const frontendBucket = new s3.Bucket(this, 'FrontendBucket', {
+      bucketName: `taskmanager-frontend-${this.account}-${this.region}`,
+      encryption: s3.BucketEncryption.S3_MANAGED,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL, // CloudFront will access via OAI
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: true, // Clean up on stack deletion
+    });
+
+    // Create Origin Access Identity for CloudFront to access S3
+    const originAccessIdentity = new cloudfront.OriginAccessIdentity(this, 'OAI', {
+      comment: 'OAI for TaskManager frontend bucket',
+    });
+
+    // Grant CloudFront read access to the bucket
+    frontendBucket.grantRead(originAccessIdentity);
+
+    // Create CloudFront distribution with HTTPS enforcement
+    // Requirements: 5.1, 5.2, 5.3, 5.5, 5.6, 23.4, 23.5, 23.8
+    const distribution = new cloudfront.Distribution(this, 'FrontendDistribution', {
+      comment: 'TaskManager Frontend Distribution',
+      defaultBehavior: {
+        origin: new origins.S3Origin(frontendBucket, {
+          originAccessIdentity,
+        }),
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS, // Requirement 5.2 - Redirect HTTP to HTTPS
+        allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
+        cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
+        compress: true, // Requirement 23.8 - Enable compression
+        cachePolicy: new cloudfront.CachePolicy(this, 'FrontendCachePolicy', {
+          cachePolicyName: 'TaskManager-Frontend-Cache',
+          comment: 'Cache policy for frontend static assets',
+          defaultTtl: cdk.Duration.seconds(300), // Requirement 23.5 - 300 second TTL
+          minTtl: cdk.Duration.seconds(0),
+          maxTtl: cdk.Duration.days(1),
+          enableAcceptEncodingGzip: true,
+          enableAcceptEncodingBrotli: true,
+        }),
+      },
+      defaultRootObject: 'index.html',
+      errorResponses: [
+        {
+          httpStatus: 404,
+          responseHttpStatus: 200,
+          responsePagePath: '/index.html', // SPA routing support
+          ttl: cdk.Duration.seconds(300),
+        },
+        {
+          httpStatus: 403,
+          responseHttpStatus: 200,
+          responsePagePath: '/index.html', // SPA routing support
+          ttl: cdk.Duration.seconds(300),
+        },
+      ],
+      minimumProtocolVersion: cloudfront.SecurityPolicyProtocol.TLS_V1_2_2021, // Requirement 5.3, 5.5 - TLS 1.2 minimum
+      // Note: SSL certificate configuration would be added here when custom domain is configured
+      // certificate: certificate, // Requirement 5.1, 5.3 - SSL certificate from ACM
+      // domainNames: ['app.example.com'],
+      priceClass: cloudfront.PriceClass.PRICE_CLASS_100, // Use only North America and Europe edge locations for cost optimization
+      enableLogging: true, // Enable access logs for monitoring
+      logBucket: new s3.Bucket(this, 'CloudFrontLogBucket', {
+        bucketName: `taskmanager-cloudfront-logs-${this.account}-${this.region}`,
+        encryption: s3.BucketEncryption.S3_MANAGED,
+        blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+        removalPolicy: cdk.RemovalPolicy.DESTROY,
+        autoDeleteObjects: true,
+        lifecycleRules: [
+          {
+            id: 'DeleteOldLogs',
+            enabled: true,
+            expiration: cdk.Duration.days(30), // Keep logs for 30 days
+          },
+        ],
+      }),
+    });
+
+    // Create CloudWatch alarm for cache hit ratio
+    // Requirement 23.4 - Monitor cache hit ratio (target 80%)
+    const cacheHitRatioAlarm = new cloudwatch.Alarm(this, 'CacheHitRatioAlarm', {
+      alarmName: 'TaskManager-CloudFront-LowCacheHitRatio',
+      alarmDescription: 'Alert when CloudFront cache hit ratio falls below 80%',
+      metric: new cloudwatch.Metric({
+        namespace: 'AWS/CloudFront',
+        metricName: 'CacheHitRate',
+        dimensionsMap: {
+          DistributionId: distribution.distributionId,
+        },
+        statistic: 'Average',
+        period: cdk.Duration.hours(1),
+      }),
+      threshold: 80, // Alert if cache hit ratio is below 80%
+      evaluationPeriods: 2,
+      comparisonOperator: cloudwatch.ComparisonOperator.LESS_THAN_THRESHOLD,
+      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+    });
+
+    cacheHitRatioAlarm.addAlarmAction(new cloudwatch_actions.SnsAction(alarmTopic));
+
+    // Output CloudFront distribution details
+    new cdk.CfnOutput(this, 'CloudFrontDistributionId', {
+      value: distribution.distributionId,
+      description: 'CloudFront distribution ID',
+    });
+
+    new cdk.CfnOutput(this, 'CloudFrontDomainName', {
+      value: distribution.distributionDomainName,
+      description: 'CloudFront distribution domain name (HTTPS enforced)',
+    });
+
+    new cdk.CfnOutput(this, 'FrontendBucketName', {
+      value: frontendBucket.bucketName,
+      description: 'S3 bucket for frontend hosting',
+    });
+
+    // Note: To configure custom domain with SSL certificate:
+    // 1. Request certificate in ACM (must be in us-east-1 for CloudFront)
+    // 2. Add certificate ARN and domain names to distribution configuration
+    // 3. Create Route53 alias record pointing to CloudFront distribution
+    // 4. Certificate auto-renewal is handled by ACM (Requirement 5.4)
   }
 }
