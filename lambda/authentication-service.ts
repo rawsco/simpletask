@@ -283,6 +283,113 @@ export class AuthenticationService {
       throw new Error(`Failed to send verification email: ${error.message}`);
     }
   }
+
+  /**
+   * Verify email with verification code
+   * Requirements: 2.2, 2.3
+   */
+  async verifyCode(email: string, code: string): Promise<boolean> {
+    if (!email || !code) {
+      return false;
+    }
+
+    // Get user from database
+    const user = await dynamoDBClient.get<User>({
+      TableName: TableNames.USERS,
+      Key: { email },
+    });
+
+    if (!user) {
+      return false;
+    }
+
+    // Check if already verified
+    if (user.verified) {
+      return true;
+    }
+
+    // Check if verification code exists
+    if (!user.verificationCode || !user.verificationCodeExpiry) {
+      return false;
+    }
+
+    // Check if code is expired
+    if (this.isCodeExpired(user.verificationCodeExpiry, this.verificationCodeExpiryHours)) {
+      return false;
+    }
+
+    // Decrypt and compare verification code
+    const decryptedCode = await encryptionService.decrypt(user.verificationCode);
+    if (decryptedCode !== code) {
+      return false;
+    }
+
+    // Mark user as verified and clear verification code
+    await dynamoDBClient.update({
+      TableName: TableNames.USERS,
+      Key: { email },
+      UpdateExpression: 'SET verified = :verified, verificationCode = :null, verificationCodeExpiry = :null, updatedAt = :updatedAt',
+      ExpressionAttributeValues: {
+        ':verified': true,
+        ':null': null,
+        ':updatedAt': Date.now(),
+      },
+    });
+
+    return true;
+  }
+
+  /**
+   * Check if a code is expired
+   * Requirements: 2.4, 3.4
+   */
+  isCodeExpired(expiryTimestamp: number, expiryHours: number): boolean {
+    const now = Date.now();
+    return now > expiryTimestamp;
+  }
+
+  /**
+   * Resend verification code
+   * Requirements: 2.7
+   */
+  async resendVerificationCode(email: string): Promise<void> {
+    // Get user from database
+    const user = await dynamoDBClient.get<User>({
+      TableName: TableNames.USERS,
+      Key: { email },
+    });
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    // Check if already verified
+    if (user.verified) {
+      throw new Error('Email already verified');
+    }
+
+    // Generate new verification code
+    const verificationCode = this.generateVerificationCode();
+    const verificationCodeExpiry = Date.now() + (this.verificationCodeExpiryHours * 60 * 60 * 1000);
+
+    // Encrypt verification code
+    const encryptedVerificationCode = await encryptionService.encrypt(verificationCode);
+
+    // Update user with new verification code
+    await dynamoDBClient.update({
+      TableName: TableNames.USERS,
+      Key: { email },
+      UpdateExpression: 'SET verificationCode = :code, verificationCodeExpiry = :expiry, updatedAt = :updatedAt',
+      ExpressionAttributeValues: {
+        ':code': encryptedVerificationCode,
+        ':expiry': verificationCodeExpiry,
+        ':updatedAt': Date.now(),
+      },
+    });
+
+    // Send verification email
+    await this.sendVerificationEmail(email, verificationCode);
+  }
 }
 
 /**
