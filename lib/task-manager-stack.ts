@@ -224,5 +224,73 @@ export class TaskManagerStack extends cdk.Stack {
       value: jwtSigningSecret.secretArn,
       description: 'ARN of the JWT signing key secret',
     });
+
+    // ========================================
+    // API Gateway
+    // ========================================
+
+    // Create REST API with throttling and CORS
+    // Requirement 6.1, 6.6, 12.6, 13.8
+    this.api = new apigateway.RestApi(this, 'TaskManagerAPI', {
+      restApiName: 'TaskManager API',
+      description: 'API for Task Manager Application',
+      deployOptions: {
+        stageName: 'prod',
+        throttlingRateLimit: 100, // 100 requests per second per IP
+        throttlingBurstLimit: 200, // Burst capacity
+        loggingLevel: apigateway.MethodLoggingLevel.INFO,
+        dataTraceEnabled: true,
+        metricsEnabled: true,
+      },
+      defaultCorsPreflightOptions: {
+        allowOrigins: apigateway.Cors.ALL_ORIGINS, // TODO: Replace with actual frontend domain in production
+        allowMethods: apigateway.Cors.ALL_METHODS,
+        allowHeaders: [
+          'Content-Type',
+          'X-Amz-Date',
+          'Authorization',
+          'X-Api-Key',
+          'X-Amz-Security-Token',
+        ],
+        allowCredentials: true,
+        maxAge: cdk.Duration.hours(1),
+      },
+      cloudWatchRole: true, // Enable CloudWatch logging
+    });
+
+    // Create auth resource with stricter rate limiting
+    const authResource = this.api.root.addResource('auth');
+
+    // Create usage plan for stricter auth endpoint throttling
+    // Requirement 6.6 - 10 req/min for auth endpoints
+    const authUsagePlan = this.api.addUsagePlan('AuthUsagePlan', {
+      name: 'Auth Endpoints Usage Plan',
+      description: 'Stricter rate limiting for authentication endpoints',
+      throttle: {
+        rateLimit: 10, // 10 requests per second
+        burstLimit: 20,
+      },
+    });
+
+    authUsagePlan.addApiStage({
+      stage: this.api.deploymentStage,
+    });
+
+    // Create tasks resource with standard rate limiting
+    const tasksResource = this.api.root.addResource('tasks');
+
+    // Add request validator for input validation
+    const requestValidator = new apigateway.RequestValidator(this, 'RequestValidator', {
+      restApi: this.api,
+      requestValidatorName: 'request-validator',
+      validateRequestBody: true,
+      validateRequestParameters: true,
+    });
+
+    // Output API endpoint
+    new cdk.CfnOutput(this, 'APIEndpoint', {
+      value: this.api.url,
+      description: 'API Gateway endpoint URL',
+    });
   }
 }
