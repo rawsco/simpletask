@@ -251,7 +251,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Test audit log entry structure
     - Test TTL configuration
 
-- [-] 8. Task service implementation
+- [x] 8. Task service implementation
   - [x] 8.1 Implement TaskService CRUD operations
     - Create createTask() to insert task into DynamoDB Tasks table
     - Create getTask() to retrieve single task by userId and taskId
