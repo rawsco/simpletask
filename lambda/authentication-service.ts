@@ -390,6 +390,236 @@ export class AuthenticationService {
     // Send verification email
     await this.sendVerificationEmail(email, verificationCode);
   }
+
+  /**
+   * Authenticate user with email and password
+   * Requirements: 4.1, 4.2
+   */
+  async authenticateUser(email: string, password: string): Promise<User | null> {
+    if (!email || !password) {
+      return null;
+    }
+
+    // Get user from database
+    const user = await dynamoDBClient.get<User>({
+      TableName: TableNames.USERS,
+      Key: { email },
+    });
+
+    if (!user) {
+      return null;
+    }
+
+    // Decrypt password hash
+    const decryptedPasswordHash = await encryptionService.decrypt(user.passwordHash);
+
+    // Verify password
+    const isValid = await this.verifyPassword(password, decryptedPasswordHash);
+    if (!isValid) {
+      return null;
+    }
+
+    return user;
+  }
+
+  /**
+   * Create a new session for authenticated user
+   * Requirements: 4.1, 7.1, 7.5, 7.7
+   */
+  async createSession(userId: string, ipAddress: string, userAgent: string): Promise<Session> {
+    const now = Date.now();
+    
+    // Generate JWT token
+    const jwtSecret = process.env.JWT_SECRET || 'default-secret-change-in-production';
+    const tokenPayload = {
+      userId,
+      sessionId: uuidv4(),
+      createdAt: now,
+    };
+    
+    const token = jwt.sign(tokenPayload, jwtSecret, {
+      expiresIn: '24h', // Maximum session lifetime
+    });
+
+    // Encrypt session token
+    const encryptedToken = await encryptionService.encrypt(token);
+
+    // Calculate expiry times
+    const inactivityExpiry = now + this.sessionInactivityTimeoutMs;
+    const maxLifetimeExpiry = now + this.sessionMaxLifetimeMs;
+    const expiresAt = Math.min(inactivityExpiry, maxLifetimeExpiry);
+
+    // Create session object
+    const session: Session = {
+      sessionToken: encryptedToken,
+      userId,
+      createdAt: now,
+      lastActivityAt: now,
+      expiresAt,
+      ipAddress,
+      userAgent,
+    };
+
+    // Store session in database
+    await dynamoDBClient.put({
+      TableName: TableNames.SESSIONS,
+      Item: session,
+    });
+
+    // Return session with unencrypted token for client
+    return {
+      ...session,
+      sessionToken: token,
+    };
+  }
+
+  /**
+   * Validate session token and check expiry
+   * Requirements: 7.1, 7.2, 7.3, 7.5, 7.6
+   */
+  async validateSession(sessionToken: string): Promise<Session | null> {
+    if (!sessionToken) {
+      return null;
+    }
+
+    try {
+      // Verify JWT token
+      const jwtSecret = process.env.JWT_SECRET || 'default-secret-change-in-production';
+      const decoded = jwt.verify(sessionToken, jwtSecret) as any;
+
+      // Encrypt token to look up in database
+      const encryptedToken = await encryptionService.encrypt(sessionToken);
+
+      // Get session from database
+      const session = await dynamoDBClient.get<Session>({
+        TableName: TableNames.SESSIONS,
+        Key: { sessionToken: encryptedToken },
+      });
+
+      if (!session) {
+        return null;
+      }
+
+      const now = Date.now();
+
+      // Check if session expired
+      if (session.expiresAt < now) {
+        // Session expired, delete it
+        await this.terminateSession(sessionToken);
+        return null;
+      }
+
+      // Check inactivity timeout
+      const inactivityDuration = now - session.lastActivityAt;
+      if (inactivityDuration > this.sessionInactivityTimeoutMs) {
+        // Session timed out due to inactivity
+        await this.terminateSession(sessionToken);
+        return null;
+      }
+
+      // Check maximum lifetime
+      const sessionAge = now - session.createdAt;
+      if (sessionAge > this.sessionMaxLifetimeMs) {
+        // Session exceeded maximum lifetime
+        await this.terminateSession(sessionToken);
+        return null;
+      }
+
+      // Update last activity time
+      const newInactivityExpiry = now + this.sessionInactivityTimeoutMs;
+      const maxLifetimeExpiry = session.createdAt + this.sessionMaxLifetimeMs;
+      const newExpiresAt = Math.min(newInactivityExpiry, maxLifetimeExpiry);
+
+      await dynamoDBClient.update({
+        TableName: TableNames.SESSIONS,
+        Key: { sessionToken: encryptedToken },
+        UpdateExpression: 'SET lastActivityAt = :lastActivityAt, expiresAt = :expiresAt',
+        ExpressionAttributeValues: {
+          ':lastActivityAt': now,
+          ':expiresAt': newExpiresAt,
+        },
+      });
+
+      // Return session with updated activity time
+      return {
+        ...session,
+        lastActivityAt: now,
+        expiresAt: newExpiresAt,
+        sessionToken, // Return unencrypted token
+      };
+    } catch (error) {
+      // Invalid token or other error
+      return null;
+    }
+  }
+
+  /**
+   * Terminate a session
+   * Requirements: 4.4
+   */
+  async terminateSession(sessionToken: string): Promise<void> {
+    if (!sessionToken) {
+      return;
+    }
+
+    try {
+      // Encrypt token to look up in database
+      const encryptedToken = await encryptionService.encrypt(sessionToken);
+
+      // Delete session from database
+      await dynamoDBClient.delete({
+        TableName: TableNames.SESSIONS,
+        Key: { sessionToken: encryptedToken },
+      });
+    } catch (error) {
+      // Ignore errors during session termination
+      console.error('Error terminating session:', error);
+    }
+  }
+
+  /**
+   * Invalidate all sessions for a user
+   * Requirements: 3.5
+   */
+  async invalidateAllSessions(userId: string): Promise<void> {
+    if (!userId) {
+      return;
+    }
+
+    try {
+      // Query all sessions for the user using GSI
+      const sessions = await dynamoDBClient.query<Session>({
+        TableName: TableNames.SESSIONS,
+        IndexName: 'UserSessionsIndex',
+        KeyConditionExpression: 'userId = :userId',
+        ExpressionAttributeValues: {
+          ':userId': userId,
+        },
+      });
+
+      // Delete all sessions
+      if (sessions.length > 0) {
+        const deleteRequests = sessions.map(session => ({
+          DeleteRequest: {
+            Key: { sessionToken: session.sessionToken },
+          },
+        }));
+
+        // Batch delete in chunks of 25 (DynamoDB limit)
+        for (let i = 0; i < deleteRequests.length; i += 25) {
+          const chunk = deleteRequests.slice(i, i + 25);
+          await dynamoDBClient.batchWrite({
+            RequestItems: {
+              [TableNames.SESSIONS]: chunk,
+            },
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error invalidating all sessions:', error);
+      throw new Error('Failed to invalidate sessions');
+    }
+  }
 }
 
 /**
