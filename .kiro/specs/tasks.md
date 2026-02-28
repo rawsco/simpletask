@@ -574,7 +574,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Load additional tasks during drag if needed
     - _Requirements: 19.1, 19.2, 19.4, 19.5, 19.6, 19.7, 19.8, 19.9, 19.10_
 
-  - [ ] 16.5 Implement hide completed tasks toggle
+  - [x] 16.5 Implement hide completed tasks toggle
     - Create toggle switch component
     - Filter completed tasks from display when enabled
     - Implement 5-second delay before hiding newly completed tasks
