@@ -1,13 +1,13 @@
 {
   "enabled": true,
   "name": "Auto Git Commit",
-  "description": "Automatically commit and push changes to git when files are edited",
+  "description": "Automatically commit changes to git when tasks are completed",
   "version": "1",
   "when": {
     "type": "postTaskExecution"
   },
   "then": {
     "type": "runCommand",
-    "command": "git add . && git commit -m \"Auto-commit: Updated files\" && git push"
+    "command": "git add . && git commit -m \"Auto-commit: Updated files\" || true"
   }
 }

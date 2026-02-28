@@ -196,7 +196,7 @@ The plan includes property-based tests for universal correctness properties and 
     - **Validates: Requirements 3.5**
     - Test that all sessions are invalidated after password reset
 
-- [ ] 5. Checkpoint - Ensure authentication tests pass
+- [x] 5. Checkpoint - Ensure authentication tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 
