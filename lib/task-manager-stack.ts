@@ -755,6 +755,7 @@ export class TaskManagerStack extends cdk.Stack {
       DB_ENCRYPTION_SECRET_ARN: dbEncryptionSecret.secretArn,
       JWT_SIGNING_SECRET_ARN: jwtSigningSecret.secretArn,
       NODE_ENV: 'production',
+      SES_FROM_EMAIL: 'aws@devotonomy.com',
     };
 
     // Authentication Lambda Function
