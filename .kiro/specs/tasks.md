@@ -704,7 +704,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Associate certificate with CloudFront distribution
     - _Requirements: 5.1, 5.3_
 
-  - [ ] 21.2 Configure automatic certificate renewal
+  - [x] 21.2 Configure automatic certificate renewal
     - Enable ACM automatic renewal
     - Set up CloudWatch alarm for certificates expiring within 30 days
     - _Requirements: 5.4_

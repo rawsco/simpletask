@@ -656,6 +656,43 @@ export class TaskManagerStack extends cdk.Stack {
 
     cacheHitRatioAlarm.addAlarmAction(new cloudwatch_actions.SnsAction(alarmTopic));
 
+    // ========================================
+    // SSL Certificate Expiration Monitoring
+    // ========================================
+
+    // ACM automatically renews certificates before expiration (Requirement 5.4)
+    // This alarm provides a safety net to alert if renewal fails
+    // Requirement 5.4 - Alert when certificate is within 30 days of expiration
+    //
+    // Note: This alarm will only work when a custom domain with ACM certificate is configured
+    // Uncomment the following code when you have an ACM certificate:
+    //
+    // const certificateExpirationAlarm = new cloudwatch.Alarm(this, 'CertificateExpirationAlarm', {
+    //   alarmName: 'TaskManager-SSLCertificateExpiring',
+    //   alarmDescription: 'Alert when SSL certificate is within 30 days of expiration',
+    //   metric: new cloudwatch.Metric({
+    //     namespace: 'AWS/CertificateManager',
+    //     metricName: 'DaysToExpiry',
+    //     dimensionsMap: {
+    //       CertificateArn: certificate.certificateArn, // Reference to the certificate created above
+    //     },
+    //     statistic: 'Minimum',
+    //     period: cdk.Duration.hours(6), // Check every 6 hours
+    //   }),
+    //   threshold: 30, // Alert if certificate expires within 30 days
+    //   evaluationPeriods: 1,
+    //   comparisonOperator: cloudwatch.ComparisonOperator.LESS_THAN_OR_EQUAL_TO_THRESHOLD,
+    //   treatMissingData: cloudwatch.TreatMissingData.BREACHING, // Alert if metric is missing (certificate might be deleted)
+    // });
+    //
+    // certificateExpirationAlarm.addAlarmAction(new cloudwatch_actions.SnsAction(alarmTopic));
+    //
+    // // Output alarm details
+    // new cdk.CfnOutput(this, 'CertificateExpirationAlarmName', {
+    //   value: certificateExpirationAlarm.alarmName,
+    //   description: 'CloudWatch alarm for SSL certificate expiration monitoring',
+    // });
+
     // Output CloudFront distribution details
     new cdk.CfnOutput(this, 'CloudFrontDistributionId', {
       value: distribution.distributionId,
