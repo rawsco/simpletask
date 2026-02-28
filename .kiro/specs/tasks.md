@@ -335,7 +335,7 @@ The plan includes property-based tests for universal correctness properties and 
     - Return session token and expiry
     - _Requirements: 2.2, 2.3, 2.6_
 
-  - [ ] 10.3 Implement AuthHandler.handleLogin
+  - [x] 10.3 Implement AuthHandler.handleLogin
     - Parse and validate request body (email, password)
     - Check if account is locked
     - Call AuthenticationService.authenticateUser()
