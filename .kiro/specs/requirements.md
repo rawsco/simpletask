@@ -19,7 +19,6 @@ This document specifies the requirements for a simple web-based task manager app
 - **Password_Reset_Code**: A time-limited code sent to a user's email address to authorize password reset
 - **Session**: An authenticated connection between a user and the application
 - **Infrastructure_as_Code**: The practice of defining all infrastructure resources in version-controlled code files
-- **CI/CD_Pipeline**: Continuous Integration and Continuous Deployment pipeline that automates testing and deployment
 - **HTTPS**: Hypertext Transfer Protocol Secure, an encrypted communication protocol using SSL/TLS certificates
 - **SSL_Certificate**: A digital certificate that authenticates a website's identity and enables encrypted connections
 - **Rate_Limiter**: A subsystem that controls the frequency of API requests from users or IP addresses
@@ -353,20 +352,7 @@ This document specifies the requirements for a simple web-based task manager app
 3. THE Task_Manager SHALL provide touch-friendly controls on mobile devices
 4. THE Task_Manager SHALL maintain a clean, simple visual design across all screen sizes
 
-### Requirement 23: Infrastructure as Code and Automated Deployment
-
-**User Story:** As a developer, I want the application infrastructure defined as code with automated deployment, so that I can easily update and evolve the application with new features.
-
-#### Acceptance Criteria
-
-1. WHEN infrastructure changes are needed, THE system SHALL define all AWS resources using Infrastructure_as_Code
-2. WHEN code is pushed to the Git repository, THE CI/CD_Pipeline SHALL automatically trigger build and deployment processes
-3. WHEN the CI/CD_Pipeline runs, THE system SHALL execute automated tests before deploying to production
-4. WHEN deployment completes, THE system SHALL make the updated application available without manual intervention
-5. THE system SHALL maintain separate environments for development, staging, and production deployments
-6. THE Infrastructure_as_Code SHALL be version-controlled in the same Git repository as the application code
-
-### Requirement 24: Cost Optimization
+### Requirement 23: Cost Optimization
 
 **User Story:** As a business owner, I want the application to operate at minimal cost while maintaining functionality and security, so that I can provide the service sustainably without excessive infrastructure expenses.
 

@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Auto Git Commit",
+  "description": "Automatically commit and push changes to git when files are edited",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "**/*"
+    ]
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "git add . && git commit -m \"Auto-commit: Updated files\" && git push"
+  }
+}
