@@ -7,6 +7,9 @@ import DraggableTaskList from '../components/DraggableTaskList'
 import HideCompletedToggle, { useHideCompletedPreference } from '../components/HideCompletedToggle'
 import TaskListWithHiding from '../components/TaskListWithHiding'
 import { ThemeToggle } from '../components/ThemeToggle'
+import { AppShell } from '../components/AppShell'
+import { AppHeader } from '../components/AppHeader'
+import { Button } from '../components/ui/button'
 import type { Task } from '../types'
 
 export default function TasksPage() {
@@ -110,34 +113,40 @@ export default function TasksPage() {
   }
 
   return (
-    <div className="tasks-container">
-      <div className="page-header">
-        <h1>My Tasks</h1>
-        <div className="flex items-center gap-2">
-          <ThemeToggle variant="dropdown" />
-          <button onClick={handleLogout} style={{ backgroundColor: '#6c757d', color: 'white' }}>
-            Logout
-          </button>
-        </div>
+    <AppShell
+      header={
+        <AppHeader
+          title="My Tasks"
+          actions={
+            <>
+              <ThemeToggle variant="dropdown" />
+              <Button onClick={handleLogout} variant="secondary">
+                Logout
+              </Button>
+            </>
+          }
+        />
+      }
+    >
+      <div className="space-y-6">
+        <TaskCreateForm onCreate={handleCreateTask} />
+        
+        <HideCompletedToggle hideCompleted={hideCompleted} onToggle={handleToggleHideCompleted} />
+
+        <TaskListWithHiding tasks={tasks} hideCompleted={hideCompleted}>
+          {(visibleTasks) => (
+            <DraggableTaskList
+              tasks={visibleTasks}
+              onReorder={handleReorderTask}
+              onToggle={handleToggleTask}
+              onDelete={handleDeleteTask}
+              onLoadMore={handleLoadMore}
+              hasMore={hasMore}
+              isLoading={isLoading}
+            />
+          )}
+        </TaskListWithHiding>
       </div>
-
-      <TaskCreateForm onCreate={handleCreateTask} />
-      
-      <HideCompletedToggle hideCompleted={hideCompleted} onToggle={handleToggleHideCompleted} />
-
-      <TaskListWithHiding tasks={tasks} hideCompleted={hideCompleted}>
-        {(visibleTasks) => (
-          <DraggableTaskList
-            tasks={visibleTasks}
-            onReorder={handleReorderTask}
-            onToggle={handleToggleTask}
-            onDelete={handleDeleteTask}
-            onLoadMore={handleLoadMore}
-            hasMore={hasMore}
-            isLoading={isLoading}
-          />
-        )}
-      </TaskListWithHiding>
-    </div>
+    </AppShell>
   )
 }
